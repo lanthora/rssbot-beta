@@ -42,7 +42,9 @@ class RSSFethcer(object):
             d = feedparser.parse(url)
             _title = d.feed.title
             _url = d.feed.title_detail.base
-            for item in d.entries:
+            limit = min(3, len(d.entries))
+            for i in range(1, limit + 1):
+                item = d.entries[i]
                 _name = item.title
                 _link = item.link
                 rssitems.append(RSSItem(_title, _url, _name, _link))
