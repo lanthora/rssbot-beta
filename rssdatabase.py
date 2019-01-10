@@ -66,7 +66,7 @@ class RSSdatabase(object):
         try:
             sql = 'SELECT count(*) FROM RSS WHERE URL=? LIMIT 1'
             cursors = cursor.execute(sql, (rss.url,))
-            ret = cursors.fetchone()
+            ret = cursors.fetchone()[0]
             if ret != 0:
                 return
             sql = "INSERT INTO RSS(URL,TITLE,MARK) VALUES(?,?,?)"
@@ -80,7 +80,7 @@ class RSSdatabase(object):
         try:
             sql = 'SELECT count(*) FROM SUB WHERE URL=? AND CHAT_ID=? LIMIT 1'
             cursors = cursor.execute(sql, (url, chat_id))
-            ret = cursors.fetchone()
+            ret = cursors.fetchone()[0]
             if ret != 0:
                 return
             sql = "INSERT INTO SUB(URL,CHAT_ID) VALUES(?,?)"
