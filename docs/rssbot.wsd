@@ -1,0 +1,62 @@
+@startuml rssbot
+class RSSbot{
+    - rssfetcher
+    - rssdatabase
+    + start()
+    + sub()
+    + unsub()
+    + rss()
+    - __refresh()
+    - __update(String url)
+    - __send()
+}
+
+
+class RSSItem{
+    + title
+    + url
+    + name
+    + link
+    + get_mark()
+}
+
+
+class RSSFetcher{
+    + RSS check_rss(url)
+    + List<RSSItem> update_rss(url)
+}
+
+
+hide RSSFetcher fields
+
+Class RSS{
+    + title
+    + url
+    + mark
+    + active
+}
+hide RSS methods
+
+class RSSDatabase{
+    + bool add_rss(rss)
+    + bool add_sub(url,chat_id)
+    + bool del_sub(url,chat_id)
+    + bool set_mark(url,mark)
+    + bool set_active(url,status)
+    + bool get_mark(url)
+    + List<String> get_chats_by_url(url)
+    + RSS get_rss_by_url(url)
+    + List<RSS> get_rss_list_by_chat_id(chat_id)
+}
+
+
+hide RSSDatabase fields
+
+RSSbot --> RSSFetcher
+RSSbot --> RSSDatabase
+RSSItem . RSSbot
+RSSItem .. RSSFetcher
+RSSbot . RSS
+RSS .. RSSDatabase
+
+@enduml
