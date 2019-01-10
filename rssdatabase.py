@@ -167,10 +167,10 @@ class RSSdatabase(object):
         try:
             rss_list = []
             if chat_id != '':
-                sql = 'SELECT * FROM RSS WHERE URL IN(SELECT URL FROM SUB WHERE CHAT_ID=?)'
+                sql = 'SELECT * FROM RSS WHERE URL IN (SELECT URL FROM SUB WHERE CHAT_ID=?)'
                 cursors = cursor.execute(sql, (chat_id,))
             else:
-                sql = 'SELECT * FROM RSS'
+                sql = 'SELECT * FROM RSS WHERE ACTIVE=1 AND URL IN (SELECT URL FROM SUB)'
                 cursors = cursor.execute(sql)
             for _ in cursors:
                 url = _[0]
