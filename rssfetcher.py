@@ -18,6 +18,7 @@
 ###############################################################################
 import feedparser
 
+import util
 from rssmodule import RSS, RSSItem
 
 
@@ -43,11 +44,12 @@ class RSSFethcer(object):
             _title = d.feed.title
             _url = d.feed.title_detail.base
             limit = min(3, len(d.entries))
-            for i in range(1, limit + 1):
+            for i in range(0, limit):
                 item = d.entries[i]
                 _name = item.title
                 _link = item.link
-                rssitems.append(RSSItem(_title, _url, _name, _link))
+                rssitem = RSSItem(_title, _url, _name, _link)
+                rssitems.append(rssitem)
             return rssitems
         except AttributeError:
             raise ParseError(url)

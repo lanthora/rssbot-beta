@@ -17,6 +17,7 @@
 #                                                                             #
 ###############################################################################
 import configparser
+import logging
 import sqlite3
 
 from rssmodule import RSS
@@ -184,7 +185,5 @@ class RSSdatabase(object):
 
 if __name__ == "__main__":
     db = RSSdatabase()
-    ret = db.get_rss_list_by_chat_id('505057195')[0]
-    ret = db.get_chats_by_url('https://blog.lanthora.org/atom.xml')
     ret = db.get_mark('https://blog.lanthora.org/atom.xml')
-    print(ret)
+    print(type(ret))

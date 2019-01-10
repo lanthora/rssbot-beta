@@ -35,4 +35,17 @@ class RSSItem(object):
         self.link = link
 
     def get_mark(self):
-        return util.md5sum(self.name + self.url)
+        return util.md5sum(self.name + self.link)
+
+
+if __name__ == "__main__":
+    import feedparser
+    rss = RSS()
+    url = 'https://blog.lanthora.org/atom.xml'
+    d = feedparser.parse(url)
+    rss.title = d.feed.title
+    rss.url = d.feed.title_detail.base
+    _name = d.entries[0].title
+    _link = d.entries[0].link
+    rss.mark = RSSItem(name=_name, link=_link).get_mark()
+    print(type(rss.mark))

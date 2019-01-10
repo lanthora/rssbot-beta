@@ -6,7 +6,7 @@ from rssbot import RSSBot
 
 if __name__ == '__main__':
     # 设置log等级
-    _level = logging.INFO
+    _level = logging.ERROR
     _format = '%(filename)s[line:%(lineno)d]: %(message)s'
     logging.basicConfig(level=_level, format=_format)
 

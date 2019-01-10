@@ -75,18 +75,19 @@ class RSSBot(object):
             chats = self.database.get_chats_by_url(url)
             mark = self.database.get_mark(url)
             _rssitems = self.fether.update_rss(url)
+            self.database.set_mark(url, _rssitems[0].get_mark())
             rssitems = []
             for rssitem in _rssitems:
                 if rssitem.get_mark() == mark:
-                    break
+                    return
                 else:
                     rssitems.append(rssitem)
             self.et[url] = 0
             self.__send(rssitems, chats)
-            self.database.set_mark(url, _rssitems[0].get_mark())
+
         except ParseError:
             self.et[url] = self.et.setdefault(url, 0) + 1
-            if self.et[url] > self.el:
+            if self.et[url] > int(self.el):
                 self.database.set_active(url, False)
                 title = self.database.get_rss_by_url(url).title
                 text = '<a href="{}">{} </a>'.format(url, title)
