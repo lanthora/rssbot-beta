@@ -1,4 +1,5 @@
 # config file and database
+log
 conf.ini
 rss.db
 # Byte-compiled / optimized / DLL files
