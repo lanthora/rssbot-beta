@@ -106,7 +106,7 @@ class RSSBot(object):
                 title = self.database.get_rss_by_url(url).title
                 text = '<a href="{}">{} </a>'.format(url, title)
                 text += 'An exception occurred in the parsing, '
-                text += 'the push has stopped, please check and resubscribe'
+                text += 'the push has stopped, please check and resubscribe.'
                 for chat_id in chats:
                     self.__send_html(chat_id, text)
 
@@ -131,7 +131,7 @@ class RSSBot(object):
         chat_id = update.message.chat_id
         username = update.effective_user.username
         if not self.__can_sub(chat_id, username):
-            text = 'Reach the subscription limit'
+            text = 'Reach the subscription limit.'
             self.__send_html(chat_id, text)
             return
         try:
@@ -140,10 +140,10 @@ class RSSBot(object):
             if rss.active:
                 self.database.add_rss(rss)
                 self.database.add_sub(rss.url, chat_id)
-                _text = 'Subscribed:<a href="{}">{}</a>'
+                _text = 'Subscribed: <a href="{}">{}</a>.'
                 text = _text.format(rss.url, rss.title)
             else:
-                text = 'Temporarily does not support this kind of RSS, please open issue or push request'
+                text = 'Temporarily does not support this kind of RSS, please open issue or push request.'
         except IndexError:
             text = 'Please enter the correct format:\n/sub url'
         finally:
@@ -155,11 +155,11 @@ class RSSBot(object):
             url = update.message.text.split(' ')[1]
             name = self.database.get_rss_by_url(url).title
             self.database.del_sub(url, chat_id)
-            text = 'Unsubscribed:<a href="{}">{}</a>'.format(url, name)
+            text = 'Unsubscribed: <a href="{}">{}</a>.'.format(url, name)
         except IndexError:
-            text = 'Please enter the correct format\n/unsub url'
+            text = 'Please enter the correct format:\n/unsub url'
         except TypeError:
-            text = 'No such subscription'
+            text = 'No such subscription.'
         finally:
             self.__send_html(chat_id, text)
 
@@ -168,7 +168,7 @@ class RSSBot(object):
         rss_list = self.database.get_rss_list_by_chat_id(chat_id)
         text = '<b>Your subscription:</b>\n'
         if len(rss_list) == 0:
-            text = 'No subscription yet'
+            text = 'No subscription yet.'
         else:
             for rss in rss_list:
                 text += '<a href="{}">{}</a>\n'.format(rss.url, rss.title)
