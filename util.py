@@ -7,6 +7,7 @@ def md5sum(plain):
     crypt = hl.hexdigest()
     return crypt
 
+
 class RecentlyUsedElements():
     def __init__(self, limit=1024):
         self.limit = limit
@@ -17,6 +18,6 @@ class RecentlyUsedElements():
         if element in self.data:
             return True
         else:
-            self.current += 1
-            self.data[(self.current) % self.limit] = element
+            self.current = (1 + self.current) % self.limit
+            self.data[self.current] = element
             return False
