@@ -158,7 +158,7 @@ class RSSBot(object):
             text = 'Unsubscribed: <a href="{}">{}</a>.'.format(url, name)
         except IndexError:
             text = 'Please enter the correct format:\n/unsub url'
-        except TypeError:
+        except (TypeError, AttributeError):
             text = 'No such subscription.'
         finally:
             self.__send_html(chat_id, text)
