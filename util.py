@@ -12,7 +12,7 @@ class RecentlyUsedElements():
     def __init__(self, limit=1024):
         self.limit = limit
         self.current = 0
-        self.data = [None]*limit
+        self.data = [None] * limit
 
     def has_element(self, element):
         if element in self.data:
