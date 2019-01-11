@@ -1,4 +1,4 @@
-###############################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                             #
 #     Copyright (C)     2019   lanthora                                       #
 #                                                                             #
@@ -15,7 +15,7 @@
 #    You should have received a copy of the GNU General Public License        #
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.   #
 #                                                                             #
-###############################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 import configparser
 import logging
 import threading
@@ -27,6 +27,7 @@ from telegram.ext import CommandHandler, Job, Updater
 
 from rssdatabase import RSSdatabase
 from rssfetcher import ParseError, RSSFethcer
+from util import RecentlyUsedElements
 
 
 class RSSBot(object):
@@ -43,10 +44,10 @@ class RSSBot(object):
         self.fether = RSSFethcer()
         self.database = RSSdatabase()
 
-        # error times
         self.et = {}
-        # error limit
         self.el = self.__config.get("default", "errorlimit")
+
+        self.recently_used_elements = RecentlyUsedElements()
 
     def __send_html(self, chat_id, text):
         self.bot.send_message(
@@ -87,8 +88,11 @@ class RSSBot(object):
             self.database.set_mark(url, _rssitems[0].get_mark())
             rssitems = []
             for rssitem in _rssitems:
-                if rssitem.get_mark() == mark:
+                _mark = rssitem.get_mark()
+                if _mark == mark:
                     break
+                elif self.recently_used_elements.has_element(_mark):
+                    continue
                 else:
                     rssitems.append(rssitem)
             self.et[url] = 0
