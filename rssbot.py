@@ -136,7 +136,7 @@ class RSSBot(object):
                 _text = 'Subscribed: <a href="{}">{}</a>.'
                 text = _text.format(rss.url, rss.title)
             else:
-                text = 'Temporarily does not support this kind of RSS, please open issue or push request.'
+                text = 'This RSS is not supported, please open issue or push request.'
         except IndexError:
             text = 'Please enter the correct format:\n/sub url'
         finally:
