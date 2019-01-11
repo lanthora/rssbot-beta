@@ -93,7 +93,7 @@ class RSSBot(object):
             rssitems = []
             for rssitem in _rssitems:
                 if rssitem.get_mark() == mark:
-                    return
+                    break
                 else:
                     rssitems.append(rssitem)
             self.et[url] = 0
