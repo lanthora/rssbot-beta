@@ -24,7 +24,6 @@ from rssmodule import RSS, RSSItem
 
 class RSSFethcer(object):
     def check_url(self, url):
-        # 只需要检查是否有RSS标题，文章标题，检查不通过active设为False
         rss = RSS()
         try:
             d = feedparser.parse(url)

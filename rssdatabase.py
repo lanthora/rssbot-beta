@@ -17,7 +17,6 @@
 #                                                                             #
 ###############################################################################
 import configparser
-import logging
 import sqlite3
 
 from rssmodule import RSS
@@ -60,9 +59,6 @@ class RSSdatabase(object):
         conn.close()
 
     def add_rss(self, rss=RSS()):
-        """
-        需要判断是否已经添加过，如果存在则不需要再次添加
-        """
         conn, cursor = self.__open()
         try:
             sql = 'SELECT count(*) FROM RSS WHERE URL=? LIMIT 1'
@@ -91,9 +87,6 @@ class RSSdatabase(object):
             self.__close(cursor, conn)
 
     def del_sub(self, url='', chat_id=''):
-        """
-        url留空则删除该用户所有的订阅
-        """
         conn, cursor = self.__open()
         try:
             if url == '':
@@ -181,9 +174,3 @@ class RSSdatabase(object):
         finally:
             self.__close(cursor, conn)
             return rss_list
-
-
-if __name__ == "__main__":
-    db = RSSdatabase()
-    ret = db.get_mark('https://blog.lanthora.org/atom.xml')
-    print(type(ret))

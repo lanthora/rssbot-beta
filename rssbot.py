@@ -48,8 +48,6 @@ class RSSBot(object):
         # error limit
         self.el = self.__config.get("default", "errorlimit")
 
-    ##################  类内常用小功能封装 ##########################
-
     def __send_html(self, chat_id, text):
         self.bot.send_message(
             chat_id, text,
@@ -66,15 +64,12 @@ class RSSBot(object):
         else:
             return False
 
-    ##################### 处理未捕获的异常 ##########################
-
     def __error(self, bot, update, error):
         try:
             raise error
         except BaseException as e:
             logging.error(e)
 
-    ######################## 推送功能 ###############################
     def __refresh(self, bot, job):
         rss_list = self.database.get_rss_list_by_chat_id()
         if len(rss_list) == 0:
@@ -119,8 +114,6 @@ class RSSBot(object):
                     self.__send_html(chat_id, text)
                 except (BadRequest, Unauthorized):
                     self.database.del_sub('', chat_id)
-
-    ######################## 对外提供的命令 #########################
 
     def start(self, bot, update):
         chat_id = update.message.chat_id
