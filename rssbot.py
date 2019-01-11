@@ -106,11 +106,11 @@ class RSSBot(object):
                 except (BadRequest, Unauthorized):
                     self.database.del_sub('', chat_id)
 
-    def __can_sub(self, chat_id):
-        admin = int(self.__config.get("default", "admin"))
+    def __can_sub(self, chat_id, username):
+        admin = self.__config.get("default", "admin")
         sublimit = int(self.__config.get("default", "sublimit"))
         current_sub = len(self.database.get_rss_list_by_chat_id(chat_id))
-        if chat_id == admin or current_sub < sublimit:
+        if username == admin or current_sub < sublimit:
             return True
         else:
             return False
@@ -123,8 +123,9 @@ class RSSBot(object):
 
     def subscribe(self, bot, update):
         chat_id = update.message.chat_id
-        if not self.__can_sub(chat_id):
-            text = 'Cannot subscribe'
+        username = update.effective_user.username
+        if not self.__can_sub(chat_id, username):
+            text = 'Reach the subscription limit'
             self.__send_html(chat_id, text)
             return
         try:

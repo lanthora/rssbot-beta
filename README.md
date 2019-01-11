@@ -23,8 +23,8 @@ freq=300
 errorlimit=60
 # Click "Start" to display the content, support html
 startmsg=<a href="https://github.com/nierunjie/rssbot-beta">README</a>
-# Administrator id, your telegram id
-admin=505057195
+# Administrator id, your telegram username
+admin=lanthora
 # The number of non-administrators can subscribe
 sublimit=10
 # Database related parameters
