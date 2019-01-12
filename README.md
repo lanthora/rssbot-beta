@@ -1,6 +1,8 @@
 # RSSBot-beta
 
-![asd](docs/rssbot.svg)
+# Sample
+
+[Telgram RSS Bot](https://t.me/BRSSBot)
 
 ## Command
 
@@ -9,7 +11,6 @@
 |sub url|Subscribe to an RSS feed|
 |unsub url|Unsubscribe from an RSS|
 |rss|Show your subscribed RSS|
-
 
 ## Configuration
 
@@ -22,7 +23,7 @@ freq=300
 # Error limit, over it will trigger error handling
 errorlimit=60
 # Click "Start" to display the content, support html
-startmsg=<a href="https://github.com/nierunjie/rssbot-beta">README</a>
+startmsg=<a href="https://github.com/nierunjie/rssbot-beta/blob/master/README.md">README</a>
 # Administrator id, your telegram username
 admin=lanthora
 # The number of non-administrators can subscribe

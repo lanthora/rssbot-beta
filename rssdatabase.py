@@ -153,9 +153,6 @@ class RSSdatabase(object):
             return rss
 
     def get_rss_list_by_chat_id(self, chat_id=''):
-        """
-        chat_id留空则返回所有rss
-        """
         conn, cursor = self.__open()
         try:
             rss_list = []
