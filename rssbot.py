@@ -104,8 +104,7 @@ class RSSBot(object):
                 self.database.set_active(url, False)
                 title = self.database.get_rss_by_url(url).title
                 text = '<a href="{}">{} </a>'.format(url, title)
-                text += '更新时出现错误，已停止推送 '
-                text += '请检查无误后重新订阅'
+                text += '更新时出现错误，已停止推送，请检查无误后重新订阅'
                 for chat_id in chats:
                     self.__send_html(chat_id, text)
 
