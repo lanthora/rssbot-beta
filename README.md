@@ -1,6 +1,6 @@
 # RSSBot-beta
 
-# Sample
+# Demo
 
 [Telgram RSS Bot](https://t.me/BRSSBot)
 
