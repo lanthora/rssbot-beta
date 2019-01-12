@@ -64,10 +64,12 @@ class RSSdatabase(object):
             sql = 'SELECT count(*) FROM RSS WHERE URL=? LIMIT 1'
             cursors = cursor.execute(sql, (rss.url,))
             ret = cursors.fetchone()[0]
-            if ret != 0:
-                return
-            sql = "INSERT INTO RSS(URL,TITLE,MARK) VALUES(?,?,?)"
-            cursors = cursor.execute(sql, (rss.url, rss.title, rss.mark))
+            if ret == 0:
+                sql = 'INSERT INTO RSS(URL,TITLE,MARK) VALUES(?,?,?)'
+                cursors = cursor.execute(sql, (rss.url, rss.title, rss.mark))
+            elif ret == 1:
+                sql = 'UPDATE RSS SET TITLE=?,ACTIVE=1 WHERE URL =?'
+                cursors = cursor.execute(sql, (rss.title, rss.url))
             conn.commit()
         finally:
             self.__close(cursor, conn)

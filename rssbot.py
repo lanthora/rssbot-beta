@@ -104,8 +104,8 @@ class RSSBot(object):
                 self.database.set_active(url, False)
                 title = self.database.get_rss_by_url(url).title
                 text = '<a href="{}">{} </a>'.format(url, title)
-                text += 'An exception occurred in the parsing, '
-                text += 'the push has stopped, please check and resubscribe.'
+                text += '更新时出现错误，已停止推送 '
+                text += '请检查无误后重新订阅'
                 for chat_id in chats:
                     self.__send_html(chat_id, text)
 
@@ -128,7 +128,7 @@ class RSSBot(object):
         chat_id = update.message.chat_id
         username = update.effective_user.username
         if not self.__can_sub(chat_id, username):
-            text = 'Reach the subscription limit.'
+            text = '达到订阅数上限'
             self.__send_html(chat_id, text)
             return
         try:
@@ -137,12 +137,12 @@ class RSSBot(object):
             if rss.active:
                 self.database.add_rss(rss)
                 self.database.add_sub(rss.url, chat_id)
-                _text = 'Subscribed: <a href="{}">{}</a>.'
+                _text = '已订阅: <a href="{}">{}</a>'
                 text = _text.format(rss.url, rss.title)
             else:
-                text = 'This RSS is not supported, please open issue or push request.'
+                text = '暂不支持此RSS'
         except IndexError:
-            text = 'Please enter the correct format:\n/sub url'
+            text = '请输入正确的格式:\n/sub url'
         finally:
             self.__send_html(chat_id, text)
 
@@ -152,20 +152,20 @@ class RSSBot(object):
             url = update.message.text.split(' ')[1]
             name = self.database.get_rss_by_url(url).title
             self.database.del_sub(url, chat_id)
-            text = 'Unsubscribed: <a href="{}">{}</a>.'.format(url, name)
+            text = '已退订: <a href="{}">{}</a>'.format(url, name)
         except IndexError:
-            text = 'Please enter the correct format:\n/unsub url'
+            text = '请输入正确的格式:\n/unsub url'
         except (TypeError, AttributeError):
-            text = 'No such subscription.'
+            text = '无此订阅'
         finally:
             self.__send_html(chat_id, text)
 
     def rss(self, bot, update):
         chat_id = update.message.chat_id
         rss_list = self.database.get_rss_list_by_chat_id(chat_id)
-        text = '<b>Your subscription:</b>\n'
+        text = '<b>你的订阅:</b>\n'
         if len(rss_list) == 0:
-            text = 'No subscription yet.'
+            text = '暂无订阅'
         else:
             for rss in rss_list:
                 text += '<a href="{}">{}</a>\n'.format(rss.url, rss.title)
