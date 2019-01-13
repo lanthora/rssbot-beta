@@ -29,7 +29,7 @@ freq=300
 # 并提醒订阅者检查该RSS
 errorlimit=60
 # 开始使用Bot时的提示提示内容
-startmsg=<a href="https://github.com/nierunjie/rssbot-beta/blob/master/README.zh-CN.md">README</a>
+startmsg=<a href="https://github.com/lanthora/rssbot-beta/blob/master/README.zh-CN.md">README</a>
 # 管理员，用于权限控制，值为username
 admin=lanthora
 # 非管理员可订阅的数量，设置为0则仅管理员可用
