@@ -1,6 +1,6 @@
 # RSSBot-beta
 
-# 样例
+## 样例
 
 [Telgram RSS Bot](https://t.me/BRSSBot)
 
@@ -38,3 +38,7 @@ sublimit=10
 dbname=rss.db
 sqlfile=rss.sql
 ```
+
+## 特性
+
+- [x] 控制订阅数量
