@@ -28,11 +28,9 @@ class RSS(object):
 
 
 class RSSItem(object):
-    def __init__(self, title='', url='', name='', link=''):
+    def __init__(self, title='', url='', name='', link='', mark=''):
         self.title = title
         self.url = url
         self.name = name
         self.link = link
-
-    def get_mark(self):
-        return util.md5sum(self.name + self.link)
+        self.mark = mark

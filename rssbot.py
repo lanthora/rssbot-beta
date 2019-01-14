@@ -20,6 +20,7 @@ import configparser
 import logging
 import threading
 import time
+import util
 
 from telegram import Bot
 from telegram.error import BadRequest, Unauthorized
@@ -85,16 +86,20 @@ class RSSBot(object):
             chats = self.database.get_chats_by_url(url)
             mark = self.database.get_mark(url)
             _rssitems = self.fether.update_rss(url)
-            self.database.set_mark(url, _rssitems[0].get_mark())
+            self.database.set_mark(url, _rssitems[0].mark)
             rssitems = []
+            normal = False
             for rssitem in _rssitems:
-                _mark = rssitem.get_mark()
-                if _mark == mark:
+                iid = util.md5sum(rssitem.url+rssitem.mark)
+                if rssitem.mark == mark:
+                    normal = True
                     break
-                elif self.recently_used_elements.has_element(_mark):
+                elif self.recently_used_elements.has_element(iid):
                     continue
                 else:
                     rssitems.append(rssitem)
+            if not normal:
+                rssitems.clear()
             self.et[url] = 0
             self.__send(rssitems, chats)
 

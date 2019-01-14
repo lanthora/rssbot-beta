@@ -31,7 +31,8 @@ class RSSFethcer(object):
             rss.url = d.feed.title_detail.base
             _name = d.entries[0].title
             _link = d.entries[0].link
-            rss.mark = RSSItem(name=_name, link=_link).get_mark()
+            _guid = d.entries[0].guid
+            rss.mark = _guid
             rss.active = True
         finally:
             return rss
@@ -42,12 +43,13 @@ class RSSFethcer(object):
             d = feedparser.parse(url)
             _title = d.feed.title
             _url = d.feed.title_detail.base
-            limit = min(3, len(d.entries))
+            limit = len(d.entries)
             for i in range(0, limit):
                 item = d.entries[i]
                 _name = item.title
                 _link = item.link
-                rssitem = RSSItem(_title, _url, _name, _link)
+                _mark = item.guid
+                rssitem = RSSItem(_title, _url, _name, _link, _mark)
                 rssitems.append(rssitem)
             return rssitems
         except AttributeError:
