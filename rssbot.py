@@ -105,7 +105,7 @@ class RSSBot(object):
 
         except ParseError:
             self.et[url] = self.et.setdefault(url, 0) + 1
-            if self.et[url] > int(self.el):
+            if self.et[url] >= int(self.el):
                 self.database.set_active(url, False)
                 title = self.database.get_rss_by_url(url).title
                 text = '<a href="{}">{} </a>'.format(url, title)
