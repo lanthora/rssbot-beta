@@ -163,11 +163,16 @@ class RSSBot(object):
         chat_id = update.message.chat_id
         rss_list = self.database.get_rss_list_by_chat_id(chat_id)
         text = '<b>你的订阅:</b>\n'
+        active_rss = '▫️<a href="{}">{}</a>\n'
+        inactive_rss = '▪️<a href="{}">{}</a>\n'
         if len(rss_list) == 0:
             text = '暂无订阅'
         else:
             for rss in rss_list:
-                text += '<a href="{}">{}</a>\n'.format(rss.url, rss.title)
+                if rss.active == True:
+                    text += active_rss.format(rss.url, rss.title)
+                else:
+                    text += inactive_rss.format(rss.url, rss.title)
         self.__send_html(chat_id, text)
 
     def run(self):
