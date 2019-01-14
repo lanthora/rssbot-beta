@@ -90,7 +90,7 @@ class RSSBot(object):
             rssitems = []
             normal = False
             for rssitem in _rssitems:
-                iid = util.md5sum(rssitem.url+rssitem.mark)
+                iid = util.md5sum(rssitem.url + rssitem.mark)
                 if rssitem.mark == mark:
                     normal = True
                     break
