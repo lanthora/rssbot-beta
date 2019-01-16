@@ -114,7 +114,8 @@ class RSSBot(object):
                     self.__send_html(chat_id, text)
 
     def __send(self, rssitems, chats):
-        for rssitem in rssitems:
+        while len(rssitems):
+            rssitem = rssitems.pop()
             _text = '<b>{}</b>\n<a href="{}">{}</a>'
             text = _text.format(rssitem.title, rssitem.link, rssitem.name)
             for chat_id in chats:
