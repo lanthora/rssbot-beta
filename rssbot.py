@@ -101,7 +101,8 @@ class RSSBot(object):
             if not normal:
                 rssitems.clear()
             self.et[url] = 0
-            self.__send(rssitems, chats)
+            if len(rssitems) > 0:
+                self.__send(rssitems, chats)
 
         except ParseError:
             self.et[url] = self.et.setdefault(url, 0) + 1
@@ -114,15 +115,17 @@ class RSSBot(object):
                     self.__send_html(chat_id, text)
 
     def __send(self, rssitems, chats):
+        _title = '<b>{}</b>'.format(rssitems[0].title)
+        _text = ''
         while len(rssitems):
             rssitem = rssitems.pop()
-            _text = '<b>{}</b>\n<a href="{}">{}</a>'
-            text = _text.format(rssitem.title, rssitem.link, rssitem.name)
-            for chat_id in chats:
-                try:
-                    self.__send_html(chat_id, text)
-                except (BadRequest, Unauthorized):
-                    self.database.del_sub('', chat_id)
+            _text += '\n<a href="{}">{}</a>'.format(rssitem.link, rssitem.name)
+        text = _title + _text
+        for chat_id in chats:
+            try:
+                self.__send_html(chat_id, text)
+            except (BadRequest, Unauthorized):
+                self.database.del_sub('', chat_id)
 
     def start(self, bot, update):
         chat_id = update.message.chat_id
