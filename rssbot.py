@@ -78,7 +78,11 @@ class RSSBot(object):
             return
         delta = self.freq/len(rss_list)
         for rss in rss_list:
-            threading.Thread(target=self.__update, args=(rss.url,)).start()
+            threading.Thread(
+                target=self.__update,
+                args=(rss.url,),
+                name=rss.title
+            ).start()
             time.sleep(delta)
 
     def __update(self, url):
@@ -104,7 +108,7 @@ class RSSBot(object):
             if len(rssitems) > 0:
                 self.__send(rssitems, chats)
 
-        except ParseError:
+        except (ParseError, IndexError):
             self.et[url] = self.et.setdefault(url, 0) + 1
             if self.et[url] >= int(self.el):
                 self.database.set_active(url, False)
