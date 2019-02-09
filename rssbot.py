@@ -140,7 +140,9 @@ class RSSBot(object):
         chat_id = update.message.chat_id
         username = update.effective_user.username
         if not self.__can_sub(chat_id, username):
-            text = '达到订阅数上限'
+            sublimit = int(self.__config.get("default", "sublimit"))
+            text = '订阅上限为 <i>{}</i> , 您已达到订阅上限\n'.format(sublimit)
+            text += '请根据 /start 中的指引自行构建'
             self.__send_html(chat_id, text)
             return
         try:
