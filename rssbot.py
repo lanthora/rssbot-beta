@@ -60,7 +60,7 @@ class RSSBot(object):
     def __can_sub(self, chat_id, username):
         admin = self.__config.get("default", "admin")
         sublimit = int(self.__config.get("default", "sublimit"))
-        current_sub = len(self.database.get_rss_list_by_chat_id(chat_id))
+        current_sub = len(self.database.get_sub_by_chat_id(chat_id))
         if username == admin or current_sub < sublimit:
             return True
         else:
@@ -73,7 +73,8 @@ class RSSBot(object):
             logging.error(e)
 
     def __refresh(self, bot, job):
-        rss_list = self.database.get_rss_list_by_chat_id()
+        logging.info("开始刷新")
+        rss_list = self.database.get_rss_list()
         if len(rss_list) == 0:
             return
         delta = self.freq/len(rss_list)
@@ -86,6 +87,7 @@ class RSSBot(object):
             time.sleep(delta)
 
     def __update(self, url):
+        logging.info("更新 {}".format(url))
         try:
             chats = self.database.get_chats_by_url(url)
             mark = self.database.get_mark(url)
@@ -97,15 +99,20 @@ class RSSBot(object):
                 iid = util.md5sum(rssitem.url + rssitem.mark)
                 if rssitem.mark == mark:
                     normal = True
+                    logging.info("所有新文章处理完毕 {}".format(rssitem.title))
                     break
                 elif self.recently_used_elements.has_element(iid):
+                    logging.info("此文章最近推送过 {}".format(rssitem.name))
                     continue
                 else:
                     rssitems.append(rssitem)
+                    logging.info("添加新文章 {}".format(rssitem.name))
             if not normal:
                 rssitems.clear()
+                logging.info("出现异常，清空所有文章 {}".format(rssitem.title))
             self.et[url] = 0
             if len(rssitems) > 0:
+                logging.info("准备发送更新 {}".format(rssitem.title))
                 self.__send(rssitems, chats)
 
         except (ParseError, IndexError):
@@ -119,13 +126,22 @@ class RSSBot(object):
                     self.__send_html(chat_id, text)
 
     def __send(self, rssitems, chats):
-        _title = '<b>{}</b>'.format(rssitems[0].title)
         _text = ''
+        _url = rssitems[0].url
         while len(rssitems):
             rssitem = rssitems.pop()
             _text += '\n<a href="{}">{}</a>'.format(rssitem.link, rssitem.name)
-        text = _title + _text
+            logging.info("取出文章标题添加到要发送到字符串 {}".format(rssitem.name))
+
+        logging.info("需要发送的用户数 {}".format(len(chats)))
         for chat_id in chats:
+            logging.info("查询的url {}".format(_url))
+            logging.info("查询的chat_id {}".format(chat_id))
+            nickname = self.database.get_nickname(_url,chat_id)
+            logging.info("获取别名 {}".format(nickname)) 
+            _title = '<b>{}</b>'.format(nickname)
+            text = _title + _text
+            logging.info("组合成最终需要发送的字符串 {}".format(text))
             try:
                 self.__send_html(chat_id, text)
             except (BadRequest, Unauthorized):
@@ -176,25 +192,38 @@ class RSSBot(object):
 
     def rss(self, bot, update):
         chat_id = update.message.chat_id
-        rss_list = self.database.get_rss_list_by_chat_id(chat_id)
+        sub_list = self.database.get_sub_by_chat_id(chat_id)
         text = '<b>你的订阅:</b>\n'
         active_rss = '▫️<a href="{}">{}</a>\n'
         inactive_rss = '▪️<a href="{}">{}</a>\n'
-        if len(rss_list) == 0:
+        if len(sub_list) == 0:
             text = '暂无订阅'
         else:
-            for rss in rss_list:
+            for rss in sub_list:
                 if rss.active == True:
                     text += active_rss.format(rss.url, rss.title)
                 else:
                     text += inactive_rss.format(rss.url, rss.title)
         self.__send_html(chat_id, text)
 
+    def rename(self,bot,update):
+        chat_id = update.message.chat_id
+        try:
+            url = update.message.text.split(' ')[1]
+            nickname = update.message.text.split(' ')[2]
+            self.database.set_nickname(url,chat_id,nickname)
+            text = '别名已更新为: <a href="{}">{}</a>'.format(url, nickname)
+        except IndexError:
+            text = '请输入正确的格式:\n/rename url nickname'
+        finally:
+            self.__send_html(chat_id, text)
+
     def run(self):
         self.dp.add_handler(CommandHandler('start', self.start))
         self.dp.add_handler(CommandHandler('sub', self.subscribe))
         self.dp.add_handler(CommandHandler('unsub', self.unsubscribe))
         self.dp.add_handler(CommandHandler('rss', self.rss))
+        self.dp.add_handler(CommandHandler('rename', self.rename))
         self.dp.add_error_handler(self.__error)
         self.jq.run_repeating(self.__refresh, self.freq, first=5)
         self.jq.start()

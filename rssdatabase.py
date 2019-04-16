@@ -40,7 +40,7 @@ class RSSdatabase(object):
     def __need_create_table(self):
         conn, cursor = self.__open()
         try:
-            sql = 'select count(*)  from sqlite_master where type="table" and (name = "RSS" or name = "SUB")'
+            sql = 'select count(*)  from sqlite_master where type="table" and (name = "RSS" or name = "SUB") LIMIT 1'
             cursors = cursor.execute(sql)
             ret = cursors.fetchone()[0]
         finally:
@@ -119,11 +119,20 @@ class RSSdatabase(object):
         finally:
             self.__close(cursor, conn)
 
+    def set_nickname(self, url, chat_id, nickname):
+        conn, cursor = self.__open()
+        try:
+            sql = 'UPDATE SUB SET NICKNAME=? WHERE URL=? AND CHAT_ID=?'
+            cursor.execute(sql, (nickname, url, chat_id))
+            conn.commit()
+        finally:
+            self.__close(cursor, conn)
+
     def get_mark(self, url=''):
         conn, cursor = self.__open()
         try:
             mark = None
-            sql = 'SELECT MARK FROM RSS WHERE URL=?'
+            sql = 'SELECT MARK FROM RSS WHERE URL=? LIMIT 1'
             cursors = cursor.execute(sql, (url,))
             mark = cursors.fetchone()[0]
         finally:
@@ -146,7 +155,7 @@ class RSSdatabase(object):
         conn, cursor = self.__open()
         try:
             rss = None
-            sql = 'SELECT * FROM RSS WHERE URL=?'
+            sql = 'SELECT * FROM RSS WHERE URL=? LIMIT 1'
             cursors = cursor.execute(sql, (url,))
             _ = cursors.fetchone()
             rss = RSS(_[1], _[0], _[2], _[3])
@@ -154,7 +163,7 @@ class RSSdatabase(object):
             self.__close(cursor, conn)
             return rss
 
-    def get_rss_list_by_chat_id(self, chat_id=''):
+    def get_rss_list(self, chat_id=''):
         conn, cursor = self.__open()
         try:
             rss_list = []
@@ -162,7 +171,7 @@ class RSSdatabase(object):
                 sql = 'SELECT * FROM RSS WHERE URL IN (SELECT URL FROM SUB WHERE CHAT_ID=?)'
                 cursors = cursor.execute(sql, (chat_id,))
             else:
-                sql = 'SELECT * FROM RSS WHERE ACTIVE=1 AND URL IN (SELECT URL FROM SUB)'
+                sql = 'SELECT * FROM RSS WHERE ACTIVE=1 AND URL IN (SELECT URL FROM SUB GROUP BY URL)'
                 cursors = cursor.execute(sql)
             for _ in cursors:
                 url = _[0]
@@ -173,3 +182,34 @@ class RSSdatabase(object):
         finally:
             self.__close(cursor, conn)
             return rss_list
+
+    def get_nickname(self, url, chat_id):
+        conn, cursor = self.__open()
+        try:
+            nickname = None
+            sql = 'SELECT NICKNAME FROM SUB WHERE URL=? AND CHAT_ID=? LIMIT 1'
+            cursors = cursor.execute(sql, (url, chat_id))
+            nickname = cursors.fetchone()[0]
+        finally:
+            self.__close(cursor, conn)
+            return nickname
+
+    def get_sub_by_chat_id(self, chat_id):
+        conn, cursor = self.__open()
+        try:
+            sub_list = []
+
+            sql = 'SELECT SUB.URL,SUB.NICKNAME,RSS.MARK,RSS.ACTIVE FROM SUB LEFT JOIN RSS WHERE CHAT_ID=?'
+            cursors = cursor.execute(sql, (chat_id,))
+
+            for _ in cursors:
+                sub_list.append(RSS(_[1], _[0], _[2], _[3]))
+        finally:
+            self.__close(cursor, conn)
+            return sub_list
+
+
+if __name__ == "__main__":
+    db = RSSdatabase()
+    name = db.get_nickname("https://demo.lanthora.org/feed/", "505057195")
+    print(name)
