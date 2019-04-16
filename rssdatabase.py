@@ -199,7 +199,7 @@ class RSSdatabase(object):
         try:
             sub_list = []
 
-            sql = 'SELECT SUB.URL,SUB.NICKNAME,RSS.MARK,RSS.ACTIVE FROM SUB LEFT JOIN RSS WHERE CHAT_ID=?'
+            sql = 'SELECT SUB.URL,SUB.NICKNAME,RSS.MARK,RSS.ACTIVE FROM SUB LEFT JOIN RSS WHERE SUB.URL=RSS.URL AND CHAT_ID=?'
             cursors = cursor.execute(sql, (chat_id,))
 
             for _ in cursors:
