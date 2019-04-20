@@ -17,7 +17,7 @@
 #                                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 import feedparser
-
+import logging
 import util
 from rssmodule import RSS, RSSItem
 
@@ -26,14 +26,29 @@ class RSSFethcer(object):
     def check_url(self, url):
         rss = RSS()
         try:
+            logging.info("请求从网络下载url")
             d = feedparser.parse(url)
+            logging.info("解析标题")
             rss.title = d.feed.title
+            logging.info("解析链接")
             rss.url = d.feed.title_detail.base
+            logging.info("解析最近文章的标题")
             _name = d.entries[0].title
+            logging.info("解析最近文章的链接")
             _link = d.entries[0].link
-            _guid = d.entries[0].guid
+            logging.info("解析最近文章的GUID")
+            try:
+                _guid = d.entries[0].guid
+            except AttributeError:
+                logging.info("GUID不存在，使用link代替")
+                _guid = _link
+            logging.info("解析完成设置标记")
             rss.mark = _guid
+            logging.info("状态设置为激活")
             rss.active = True
+        except Exception:
+            logging.error("生成rss过程中出现错误")
+            logging.error("url: {}".format(url))
         finally:
             return rss
 
@@ -48,7 +63,10 @@ class RSSFethcer(object):
                 item = d.entries[i]
                 _name = item.title
                 _link = item.link
-                _mark = item.guid
+                try:
+                    _mark = item.guid
+                except AttributeError:
+                    _mark = item.link
                 rssitem = RSSItem(_title, _url, _name, _link, _mark)
                 rssitems.append(rssitem)
             return rssitems

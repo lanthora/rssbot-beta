@@ -58,12 +58,15 @@ class RSSBot(object):
         )
 
     def __can_sub(self, chat_id, username):
+        logging.info("检查 {} 是否有权限订阅".format(username))
         admin = self.__config.get("default", "admin")
         sublimit = int(self.__config.get("default", "sublimit"))
         current_sub = len(self.database.get_sub_by_chat_id(chat_id))
         if username == admin or current_sub < sublimit:
+            logging.info("{} 可以进行订阅操作".format(username))
             return True
         else:
+            logging.info("{} 禁止进行订阅操作".format(username))
             return False
 
     def __error(self, bot, update, error):
@@ -155,22 +158,27 @@ class RSSBot(object):
     def subscribe(self, bot, update):
         chat_id = update.message.chat_id
         username = update.effective_user.username
+        logging.info("{} 发起订阅".format(username))
         if not self.__can_sub(chat_id, username):
             sublimit = int(self.__config.get("default", "sublimit"))
             text = '订阅上限为 <i>{}</i> , 您已达到订阅上限\n'.format(sublimit)
             text += '请根据 /start 中的指引自行构建'
             self.__send_html(chat_id, text)
+            logging.info("向 {} 反馈已经达到订阅上限".format(username))
             return
         try:
             url = update.message.text.split(' ')[1]
+            logging.info("从命令中拆分出订阅url {}".format(url))
             rss = self.fether.check_url(url)
+            logging.info("请求url并返回rss对象")
             if rss.active:
                 self.database.add_rss(rss)
                 self.database.add_sub(rss.url, chat_id)
                 _text = '已订阅: <a href="{}">{}</a>'
                 text = _text.format(rss.url, rss.title)
             else:
-                text = '暂不支持此RSS'
+                issue = "https://github.com/lanthora/rssbot-beta/issues"
+                text = '暂不支持此RSS，请<a href="{}">上报</a>'.format(issue)
         except IndexError:
             text = '请输入正确的格式:\n/sub url'
         finally:

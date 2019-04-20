@@ -31,4 +31,6 @@ sublimit=10
 # Database related parameters
 dbname=rss.db
 sqlfile=rss.sql
+# log lever
+loglevel=ERROR
 ```

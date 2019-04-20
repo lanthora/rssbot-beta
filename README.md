@@ -45,6 +45,9 @@ sublimit=10
 # 数据库相关文件，修改请慎重
 dbname=rss.db
 sqlfile=rss.sql
+
+# 日志级别，ERROR/非ERROR
+loglevel=ERROR
 ```
 
 
