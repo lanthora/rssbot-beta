@@ -11,12 +11,54 @@
 
 ## 命令
 
-|命令|描述|
-|:-|:-|
-|sub url|订阅一个RSS|
-|unsub url|退订一个RSS|
-|rss|显示已经订阅的RSS|
-|rename|重命名显示的标题|
+通过一组实例解释命令用法
+
+---
+
+/rss
+
+暂无订阅
+
+---
+
+/sub https://www.solidot.org/index.rss
+
+已订阅: [最新更新 – Solidot](https://www.solidot.org/index.rss)
+
+---
+
+/rss
+
+你的订阅:  
+▫️[最新更新 – Solidot](https://www.solidot.org/index.rss)
+
+---
+
+/rename https://www.solidot.org/index.rss Solidot
+
+别名已更新为: [Solidot](https://www.solidot.org/index.rss)
+
+---
+
+/rss
+
+你的订阅:  
+▫️[Solidot](https://www.solidot.org/index.rss)
+
+---
+
+/unsub https://www.solidot.org/index.rss
+
+已退订: [最新更新 – Solidot](https://www.solidot.org/index.rss)
+
+---
+
+/rss
+
+暂无订阅
+
+---
+
 
 ## 配置
 
