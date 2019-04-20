@@ -149,6 +149,8 @@ class RSSBot(object):
                 self.__send_html(chat_id, text)
             except (BadRequest, Unauthorized):
                 self.database.del_sub('', chat_id)
+            except BaseException as base_exception:
+                logging.error(base_exception)
 
     def start(self, bot, update):
         chat_id = update.message.chat_id
