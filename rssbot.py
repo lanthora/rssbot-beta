@@ -220,7 +220,7 @@ class RSSBot(object):
         chat_id = update.message.chat_id
         try:
             url = update.message.text.split(' ')[1]
-            nickname = ' '.join(update.message.text.split(' ')[2:])
+            nickname = ' '.join(update.message.text.split(' ')[2:]).strip()
             logging.info("更新的别名为 {}".format(nickname))
             self.database.set_nickname(url,chat_id,nickname)
             text = '别名已更新为: <a href="{}">{}</a>'.format(url, nickname)
