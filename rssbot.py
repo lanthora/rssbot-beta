@@ -220,11 +220,16 @@ class RSSBot(object):
         chat_id = update.message.chat_id
         try:
             url = update.message.text.split(' ')[1]
-            nickname = update.message.text.split(' ')[2]
+            nickname = ' '.join(update.message.text.split(' ')[2:])
+            logging.info("更新的别名为 {}".format(nickname))
             self.database.set_nickname(url,chat_id,nickname)
             text = '别名已更新为: <a href="{}">{}</a>'.format(url, nickname)
         except IndexError:
             text = '请输入正确的格式:\n/rename url nickname'
+        except BaseException as base_exception:
+            logging.error(base_exception)
+            issue = "https://github.com/lanthora/rssbot-beta/issues"
+            text = '发生未知错误，请<a href="{}">上报</a>'.format(issue)
         finally:
             self.__send_html(chat_id, text)
 
