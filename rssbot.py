@@ -37,7 +37,10 @@ class RSSBot(object):
         self.__config.read('conf.ini')
 
         self.bot = Bot(self.__config.get("default", "token"))
-        self.updater = Updater(token=self.__config.get("default", "token"))
+        self.updater = Updater(
+            token=self.__config.get("default", "token"), 
+            use_context=True
+        )
         self.dp = self.updater.dispatcher
         self.jq = self.updater.job_queue
         self.freq = int(self.__config.get("default", "freq"))
@@ -69,13 +72,13 @@ class RSSBot(object):
             logging.info("{} 禁止进行订阅操作".format(username))
             return False
 
-    def __error(self, bot, update, error):
+    def __error(self, update, context):
         try:
-            raise error
+            raise context.error
         except BaseException as e:
             logging.error(e)
 
-    def __refresh(self, bot, job):
+    def __refresh(self, context):
         logging.info("开始刷新")
         rss_list = self.database.get_rss_list()
         if len(rss_list) == 0:
@@ -140,8 +143,8 @@ class RSSBot(object):
         for chat_id in chats:
             logging.info("查询的url {}".format(_url))
             logging.info("查询的chat_id {}".format(chat_id))
-            nickname = self.database.get_nickname(_url,chat_id)
-            logging.info("获取别名 {}".format(nickname)) 
+            nickname = self.database.get_nickname(_url, chat_id)
+            logging.info("获取别名 {}".format(nickname))
             _title = '<b>{}</b>'.format(nickname)
             text = _title + _text
             logging.info("组合成最终需要发送的字符串 {}".format(text))
@@ -152,12 +155,12 @@ class RSSBot(object):
             except BaseException as base_exception:
                 logging.error(base_exception)
 
-    def start(self, bot, update):
+    def start(self, update, context):
         chat_id = update.message.chat_id
         text = self.__config.get("default", "startmsg")
         self.__send_html(chat_id, text)
 
-    def subscribe(self, bot, update):
+    def subscribe(self, update, context):
         chat_id = update.message.chat_id
         username = update.effective_user.username
         logging.info("{} 发起订阅".format(username))
@@ -186,7 +189,7 @@ class RSSBot(object):
         finally:
             self.__send_html(chat_id, text)
 
-    def unsubscribe(self, bot, update):
+    def unsubscribe(self, update, context):
         chat_id = update.message.chat_id
         try:
             url = update.message.text.split(' ')[1]
@@ -200,7 +203,7 @@ class RSSBot(object):
         finally:
             self.__send_html(chat_id, text)
 
-    def rss(self, bot, update):
+    def rss(self, update, context):
         chat_id = update.message.chat_id
         sub_list = self.database.get_sub_by_chat_id(chat_id)
         text = '<b>你的订阅:</b>\n'
@@ -210,19 +213,19 @@ class RSSBot(object):
             text = '暂无订阅'
         else:
             for rss in sub_list:
-                if rss.active == True:
+                if bool(rss.active) == True:
                     text += active_rss.format(rss.url, rss.title)
                 else:
                     text += inactive_rss.format(rss.url, rss.title)
         self.__send_html(chat_id, text)
 
-    def rename(self,bot,update):
+    def rename(self, update, context):
         chat_id = update.message.chat_id
         try:
             url = update.message.text.split(' ')[1]
             nickname = ' '.join(update.message.text.split(' ')[2:]).strip()
             logging.info("更新的别名为 {}".format(nickname))
-            self.database.set_nickname(url,chat_id,nickname)
+            self.database.set_nickname(url, chat_id, nickname)
             text = '别名已更新为: <a href="{}">{}</a>'.format(url, nickname)
         except IndexError:
             text = '请输入正确的格式:\n/rename url nickname'
