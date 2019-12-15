@@ -18,10 +18,10 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 import configparser
 import logging
-import threading
 import time
 import util
 
+from concurrent.futures import ThreadPoolExecutor
 from telegram import Bot
 from telegram.error import BadRequest, Unauthorized
 from telegram.ext import CommandHandler, Job, Updater
@@ -53,6 +53,8 @@ class RSSBot(object):
 
         self.recently_used_elements = RecentlyUsedElements()
 
+        self.executor = ThreadPoolExecutor()
+
     def __send_html(self, chat_id, text):
         self.bot.send_message(
             chat_id, text,
@@ -79,21 +81,17 @@ class RSSBot(object):
             logging.error(e)
 
     def __refresh(self, context):
-        logging.info("开始刷新")
+        logging.info("开始刷新所有订阅")
         rss_list = self.database.get_rss_list()
         if len(rss_list) == 0:
             return
         delta = self.freq/len(rss_list)
         for rss in rss_list:
-            threading.Thread(
-                target=self.__update,
-                args=(rss.url,),
-                name=rss.title
-            ).start()
+            self.executor.submit(self.__update,rss.url)
             time.sleep(delta)
 
     def __update(self, url):
-        logging.info("更新 {}".format(url))
+        logging.info("开始更新 {}".format(url))
         try:
             chats = self.database.get_chats_by_url(url)
             mark = self.database.get_mark(url)
