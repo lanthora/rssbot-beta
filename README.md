@@ -14,54 +14,38 @@
 
 ## 命令
 
-通过一组实例解释命令用法
+```html
+<!--订阅--> 
 
----
-
-/rss
-
-暂无订阅
-
----
-
+Input：
 /sub https://www.solidot.org/index.rss
 
-已订阅: [最新更新 – Solidot](https://www.solidot.org/index.rss)
+Output：
+已订阅: 
+最新更新 – Solidot
 
----
+<!--显示所有订阅--> 
 
+Input：
 /rss
 
+Output：
 你的订阅:  
-▫️[最新更新 – Solidot](https://www.solidot.org/index.rss)
+▫️最新更新 – Solidot
 
----
+<!--重命名--> 
 
 /rename https://www.solidot.org/index.rss Solidot
 
-别名已更新为: [Solidot](https://www.solidot.org/index.rss)
+别名已更新为: Solidot
 
----
-
-/rss
-
-你的订阅:  
-▫️[Solidot](https://www.solidot.org/index.rss)
-
----
+<!--退订--> 
 
 /unsub https://www.solidot.org/index.rss
 
-已退订: [最新更新 – Solidot](https://www.solidot.org/index.rss)
+已退订: 最新更新 – Solidot
 
----
-
-/rss
-
-暂无订阅
-
----
-
+```
 
 ## 配置
 
