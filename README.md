@@ -17,19 +17,14 @@
 ```html
 <!--订阅--> 
 
-Input：
 /sub https://www.solidot.org/index.rss
 
-Output：
-已订阅: 
-最新更新 – Solidot
+已订阅: 最新更新 – Solidot
 
 <!--显示所有订阅--> 
 
-Input：
 /rss
 
-Output：
 你的订阅:  
 ▫️最新更新 – Solidot
 
