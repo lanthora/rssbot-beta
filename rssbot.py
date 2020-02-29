@@ -105,7 +105,7 @@ class RSSBot(object):
                     normal = True
                     logging.info("所有新文章处理完毕 {}".format(rssitem.title))
                     break
-                elif self.recently_used_elements.has_element(iid):
+                elif self.recently_used_elements.has_element(iid,url):
                     logging.info("此文章最近推送过 {}".format(rssitem.name))
                     continue
                 else:
