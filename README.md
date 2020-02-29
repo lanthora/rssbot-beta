@@ -58,7 +58,7 @@ freq=300
 errorlimit=60
 
 # /start 的回复内容
-startmsg=<a href="https://github.com/lanthora/rssbot-beta/blob/master/README.zh-CN.md">README</a>
+startmsg=<a href="https://github.com/lanthora/rssbot-beta/blob/master/README.md">README</a>
 
 # 管理员，用于权限控制，值为username
 admin=lanthora
