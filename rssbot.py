@@ -18,14 +18,16 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 import configparser
 import logging
+import signal
+import sys
 import time
-import util
-
 from concurrent.futures import ThreadPoolExecutor
+
 from telegram import Bot
 from telegram.error import BadRequest, Unauthorized
 from telegram.ext import CommandHandler, Job, Updater
 
+import util
 from rssdatabase import RSSdatabase
 from rssfetcher import ParseError, RSSFethcer
 from util import RecentlyUsedElements
@@ -38,7 +40,7 @@ class RSSBot(object):
 
         self.bot = Bot(self.__config.get("default", "token"))
         self.updater = Updater(
-            token=self.__config.get("default", "token"), 
+            token=self.__config.get("default", "token"),
             use_context=True
         )
         self.dp = self.updater.dispatcher
@@ -54,6 +56,9 @@ class RSSBot(object):
         self.recently_used_elements = RecentlyUsedElements()
 
         self.executor = ThreadPoolExecutor()
+
+        signal.signal(signal.SIGINT, self.__sig_handler)
+        signal.signal(signal.SIGTERM, self.__sig_handler)
 
     def __send_html(self, chat_id, text):
         self.bot.send_message(
@@ -77,8 +82,6 @@ class RSSBot(object):
     def __error(self, update, context):
         try:
             raise context.error
-        except SystemExit:
-            logging.info("Exit")
         except BaseException as e:
             logging.error(e)
 
@@ -89,7 +92,7 @@ class RSSBot(object):
             return
         delta = self.freq/len(rss_list)
         for rss in rss_list:
-            self.executor.submit(self.__update,rss.url)
+            self.executor.submit(self.__update, rss.url)
             time.sleep(delta)
 
     def __update(self, url):
@@ -107,7 +110,7 @@ class RSSBot(object):
                     normal = True
                     logging.info("所有新文章处理完毕 {}".format(rssitem.title))
                     break
-                elif self.recently_used_elements.has_element(iid,url):
+                elif self.recently_used_elements.has_element(iid, url):
                     logging.info("此文章最近推送过 {}".format(rssitem.name))
                     continue
                 else:
@@ -246,3 +249,7 @@ class RSSBot(object):
         self.jq.run_repeating(self.__refresh, self.freq, first=5)
         self.jq.start()
         self.updater.start_polling()
+
+    def __sig_handler(self, signal, frame):
+        self.jq.stop()
+        sys.exit(0)

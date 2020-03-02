@@ -105,7 +105,6 @@ class RecentlyUsedElements():
         self.__dump()
         sys.exit(0)
 
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG,format="%(asctime)s - %(message)s")
     rue = RecentlyUsedElements(5)
