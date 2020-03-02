@@ -29,7 +29,7 @@ class RSSFethcer(object):
             logging.info("请求从网络下载url")
             d = feedparser.parse(url)
             logging.info("解析标题")
-            rss.title = d.feed.title
+            rss.title = " ".join(d.feed.title.split())
             logging.info("解析链接")
             rss.url = d.feed.title_detail.base
             logging.info("解析最近文章的标题")
