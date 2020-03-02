@@ -73,7 +73,7 @@ class RecentlyUsedElements():
             with open("dict.json", "r", encoding="UTF-8") as f:
                 self.dict = json.load(f)
         except FileNotFoundError:
-            logging.info("创建缓存文件 dict.json")
+            logging.info("缓存文件不存在 dict.json")
         except json.decoder.JSONDecodeError:
             logging.info("缓存文件内容为空 dict.json")
 
