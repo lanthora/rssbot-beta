@@ -1,6 +1,6 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                             #
-#     Copyright (C)     2019   lanthora                                       #
+#     Copyright (C)     2019-2020   lanthora                                  #
 #                                                                             #
 #    This program is free software: you can redistribute it and/or modify     #
 #    it under the terms of the GNU General Public License as published by     #
@@ -77,6 +77,8 @@ class RSSBot(object):
     def __error(self, update, context):
         try:
             raise context.error
+        except SystemExit:
+            logging.info("Exit")
         except BaseException as e:
             logging.error(e)
 
