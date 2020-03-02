@@ -57,9 +57,6 @@ class RSSBot(object):
 
         self.executor = ThreadPoolExecutor()
 
-        signal.signal(signal.SIGINT, self.__sig_handler)
-        signal.signal(signal.SIGTERM, self.__sig_handler)
-
     def __send_html(self, chat_id, text):
         self.bot.send_message(
             chat_id, text,
@@ -249,7 +246,3 @@ class RSSBot(object):
         self.jq.run_repeating(self.__refresh, self.freq, first=5)
         self.jq.start()
         self.updater.start_polling()
-
-    def __sig_handler(self, signal, frame):
-        self.jq.stop()
-        sys.exit(0)
