@@ -16,7 +16,7 @@ if __name__ == '__main__':
     else:
         _level = logging.DEBUG
 
-    _format = '%(filename)s[line:%(lineno)d]: %(message)s'
+    _format = "%(asctime)s - %(message)s"
     logging.basicConfig(level=_level, format=_format)
 
     bot = RSSBot()
