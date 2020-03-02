@@ -196,6 +196,10 @@ class RSSBot(object):
             name = self.database.get_rss_by_url(url).title
             self.database.del_sub(url, chat_id)
             text = '已退订: <a href="{}">{}</a>'.format(url, name)
+            if(self.database.get_sub_num_by_url(url)==0):
+                logging.info("订阅数清零 {}".format(url))
+                self.recently_used_elements.remove_cache(url)
+
         except IndexError:
             text = '请输入正确的格式:\n/unsub url'
         except (TypeError, AttributeError):

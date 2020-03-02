@@ -105,8 +105,19 @@ class RecentlyUsedElements():
         self.__dump()
         sys.exit(0)
 
+    def remove_cache(self, url: str):
+        try:
+            self.dict.pop(url)
+        except KeyError:
+            # 被移除的url根本没有缓存
+            pass
+        finally:
+            logging.info("清空缓存 {}".format(url))
+
+
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG,format="%(asctime)s - %(message)s")
+    logging.basicConfig(level=logging.DEBUG,
+                        format="%(asctime)s - %(message)s")
     rue = RecentlyUsedElements(5)
     print(rue.has_element("1", "123"))  # False
     print(rue.has_element("1", "123"))  # False

@@ -151,6 +151,9 @@ class RSSdatabase(object):
             self.__close(cursor, conn)
             return chats
 
+    def get_sub_num_by_url(self, url=''):
+        return len(self.get_chats_by_url(url))
+
     def get_rss_by_url(self, url=''):
         conn, cursor = self.__open()
         try:
