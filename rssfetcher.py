@@ -26,25 +26,25 @@ class RSSFethcer(object):
     def check_url(self, url):
         rss = RSS()
         try:
-            logging.info("请求从网络下载url")
+            logging.debug("请求从网络下载url")
             d = feedparser.parse(url)
-            logging.info("解析标题")
+            logging.debug("解析标题")
             rss.title = " ".join(d.feed.title.split())
-            logging.info("解析链接")
+            logging.debug("解析链接")
             rss.url = d.feed.title_detail.base
-            logging.info("解析最近文章的标题")
+            logging.debug("解析最近文章的标题")
             _name = d.entries[0].title
-            logging.info("解析最近文章的链接")
+            logging.debug("解析最近文章的链接")
             _link = d.entries[0].link
-            logging.info("解析最近文章的GUID")
+            logging.debug("解析最近文章的GUID")
             try:
                 _guid = d.entries[0].guid
             except AttributeError:
-                logging.info("GUID不存在，使用link代替")
+                logging.debug("GUID不存在，使用link代替")
                 _guid = _link
-            logging.info("解析完成设置标记")
+            logging.debug("解析完成设置标记")
             rss.mark = _guid
-            logging.info("状态设置为激活")
+            logging.debug("状态设置为激活")
             rss.active = True
         except Exception:
             logging.error("生成rss过程中出现错误")
