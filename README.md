@@ -66,10 +66,6 @@ admin=lanthora
 # 非管理员可订阅的数量，设置为0则仅管理员可用
 sublimit=10
 
-# 数据库相关文件，修改请慎重
-dbname=rss.db
-sqlfile=rss.sql
-
 # 日志级别，ERROR/非ERROR
 loglevel=ERROR
 ```

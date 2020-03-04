@@ -1,13 +1,14 @@
 #!/usr/bin/python3
+import configparser
 import logging
 import sys
-import configparser
 
+import util
 from rssbot import RSSBot
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
-    config.read('conf.ini')
+    config.read(util.absolute_path('conf.ini'))
 
     if config.get("default", "loglevel") == 'ERROR':
         _level = logging.ERROR
@@ -17,7 +18,7 @@ if __name__ == '__main__':
         _level = logging.DEBUG
 
     _format = "%(asctime)s - %(message)s"
-    _filename = "rss.log"
+    _filename = util.absolute_path("rss.log")
     _filemode = "a"
     logging.basicConfig(level=_level, format=_format,
                         filename=_filename, filemode=_filemode)

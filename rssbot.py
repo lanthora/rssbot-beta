@@ -36,7 +36,7 @@ from util import RecentlyUsedElements
 class RSSBot(object):
     def __init__(self):
         self.__config = configparser.ConfigParser()
-        self.__config.read('conf.ini')
+        self.__config.read(util.absolute_path('conf.ini'))
 
         self.bot = Bot(self.__config.get("default", "token"))
         self.updater = Updater(

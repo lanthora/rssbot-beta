@@ -32,6 +32,10 @@ def md5sum(plain: str) -> str:
     return crypt
 
 
+def absolute_path(relative_path: str) -> str:
+    return "{}/{}".format(sys.path[0], relative_path)
+
+
 class RecentlyUsedElements():
     def __init__(self, dict_limit: int = 50):
 
@@ -89,15 +93,16 @@ class RecentlyUsedElements():
 
     def __load(self):
         try:
-            with open("dict.json", "r", encoding="UTF-8") as f:
+            with open(absolute_path("dict.json"), "r", encoding="UTF-8") as f:
                 self.dict = json.load(f)
+                logging.info("程序启动 读取缓存文件 dict.json")
         except FileNotFoundError:
             logging.debug("缓存文件不存在 dict.json")
         except json.decoder.JSONDecodeError:
             logging.debug("缓存文件内容为空 dict.json")
 
     def __dump(self):
-        with open("dict.json", "w", encoding="UTF-8") as f:
+        with open(absolute_path("dict.json"), "w", encoding="UTF-8") as f:
             json.dump(self.dict, f, ensure_ascii=False)
 
     def __sig_handler(self, signal, frame):

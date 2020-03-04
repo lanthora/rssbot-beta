@@ -20,14 +20,12 @@ import configparser
 import sqlite3
 
 from rssmodule import RSS
-
+import util
 
 class RSSdatabase(object):
     def __init__(self):
-        self.__config = configparser.ConfigParser()
-        self.__config.read('conf.ini')
-        self.dbname = self.__config.get("default", "dbname")
-        self.sqlfile = self.__config.get("default", "sqlfile")
+        self.dbname = util.absolute_path("rss.db")
+        self.sqlfile = util.absolute_path("rss.sql")
 
         if self.__need_create_table():
             conn, cursor = self.__open()

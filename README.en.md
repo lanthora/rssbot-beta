@@ -28,9 +28,6 @@ startmsg=<a href="https://github.com/lanthora/rssbot-beta/blob/master/README.md"
 admin=lanthora
 # The number of non-administrators can subscribe
 sublimit=10
-# Database related parameters
-dbname=rss.db
-sqlfile=rss.sql
 # log lever
 loglevel=ERROR
 ```
