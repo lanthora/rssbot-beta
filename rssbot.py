@@ -56,6 +56,9 @@ class RSSBot(object):
         self.recently_used_elements = RecentlyUsedElements()
 
         self.executor = ThreadPoolExecutor()
+        self.exit = False
+        signal.signal(signal.SIGINT, self.sig_handler)
+        signal.signal(signal.SIGTERM, self.sig_handler)
 
     def __send_html(self, chat_id, text):
         self.bot.send_message(
@@ -89,6 +92,8 @@ class RSSBot(object):
             return
         delta = self.freq/len(rss_list)
         for rss in rss_list:
+            if self.exit:
+                break
             self.executor.submit(self.__update, rss.url)
             time.sleep(delta)
 
@@ -255,3 +260,9 @@ class RSSBot(object):
         self.jq.run_repeating(self.__refresh, self.freq, first=5)
         self.jq.start()
         self.updater.start_polling()
+
+    def sig_handler(self, signal, frame):
+        self.exit = True
+        self.updater.stop()
+        self.jq.stop()
+        self.recently_used_elements.dump()

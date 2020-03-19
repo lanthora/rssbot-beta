@@ -20,7 +20,6 @@ import hashlib
 import json
 import logging
 import random
-import signal
 import sys
 import time
 
@@ -42,8 +41,6 @@ class RecentlyUsedElements():
         self.dict = {}
         self.dict_limit = dict_limit
         self.__load()
-        signal.signal(signal.SIGINT, self.__sig_handler)
-        signal.signal(signal.SIGTERM, self.__sig_handler)
 
     def has_element(self, element: str, url: str = None) -> bool:
         logging.debug("查重 {}".format(url))
@@ -101,14 +98,10 @@ class RecentlyUsedElements():
         except json.decoder.JSONDecodeError:
             logging.debug("缓存文件内容为空 dict.json")
 
-    def __dump(self):
+    def dump(self):
+        logging.info("中断信号 保存dict.json")
         with open(absolute_path("dict.json"), "w", encoding="UTF-8") as f:
             json.dump(self.dict, f, ensure_ascii=False)
-
-    def __sig_handler(self, signal, frame):
-        logging.info("中断信号 保存dict.json")
-        self.__dump()
-        sys.exit(0)
 
     def remove_cache(self, url: str):
         try:
