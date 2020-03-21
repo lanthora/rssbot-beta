@@ -258,7 +258,8 @@ class RSSBot(object):
         self.updater.start_polling()
 
     def sig_handler(self, signal, frame):
+        DataFactory().dump()
         self.exit = True
         self.updater.stop()
         self.jq.stop()
-        DataFactory().dump()
+        
