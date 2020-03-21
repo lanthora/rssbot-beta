@@ -28,7 +28,7 @@ from telegram.error import BadRequest, Unauthorized
 from telegram.ext import CommandHandler, Job, Updater
 
 import util
-from rssdata import RecentlyUsedElements, DataFactory, Settings
+from rssdata import RecentlyUsedElements, NoSQLDB, Settings
 from rssdatabase import RSSdatabase
 from rssfetcher import ParseError, RSSFethcer
 
@@ -44,14 +44,14 @@ class RSSBot(object):
         self.fether = RSSFethcer()
         self.database = RSSdatabase()
 
-        self.et = DataFactory().get_error_times_db()
+        self.et = NoSQLDB().get_error_times_db()
         self.el = Settings().get_error_limit()
 
         self.recently_used_elements = RecentlyUsedElements()
 
         self.executor = ThreadPoolExecutor()
 
-        self.regular_db = DataFactory().get_regular_exp_db()
+        self.regular_db = NoSQLDB().get_regular_exp_db()
 
         self.exit = False
         signal.signal(signal.SIGINT, self.sig_handler)
@@ -258,8 +258,8 @@ class RSSBot(object):
         self.updater.start_polling()
 
     def sig_handler(self, signal, frame):
-        DataFactory().dump()
+        NoSQLDB().dump()
         self.exit = True
         self.updater.stop()
         self.jq.stop()
-        
+

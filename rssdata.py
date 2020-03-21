@@ -69,7 +69,7 @@ class Settings(object):
 
 
 @singleton
-class DataFactory(object):
+class NoSQLDB(object):
     def __init__(self):
         self.data: dict = {}
         self.__loaded: bool = False
@@ -121,7 +121,7 @@ class DataFactory(object):
 @singleton
 class RecentlyUsedElements():
     def __init__(self, dict_limit: int = 50):
-        self.dict = DataFactory().get_recently_used_elements_db()
+        self.dict = NoSQLDB().get_recently_used_elements_db()
         self.dict_limit = dict_limit
 
     def has_element(self, element: str, url: str = None) -> bool:
@@ -175,4 +175,4 @@ if __name__ == "__main__":
     print(rue.has_element(1, 2))
     print(rue.has_element(1, 2))
     print(rue.has_element(1, 2))
-    DataFactory().dump()
+    NoSQLDB().dump()
