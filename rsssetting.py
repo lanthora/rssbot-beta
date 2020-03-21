@@ -16,10 +16,12 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.   #
 #                                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-import util
 import configparser
 import logging
 from functools import wraps
+
+import util
+
 
 def default(default_value):
     def set_default_value(fn):
@@ -30,9 +32,10 @@ def default(default_value):
             except:
                 ret = default_value
             finally:
-                return ret  
+                return ret
         return decorated
     return set_default_value
+
 
 class settings(object):
     config = configparser.ConfigParser()
@@ -41,7 +44,7 @@ class settings(object):
     @classmethod
     @default("test")
     def get_noting(cls):
-      return settings.config.get("default", "nothing")
+        return settings.config.get("default", "nothing")
 
     @classmethod
     def get_token(cls):
@@ -51,13 +54,11 @@ class settings(object):
     @default(300)
     def get_interval(cls):
         return int(settings.config.get("default", "interval"))
-        
 
     @classmethod
     @default(3)
     def get_error_limit(cls):
         return int(settings.config.get("default", "errorlimit"))
-          
 
     @classmethod
     @default("lanthora")
@@ -73,13 +74,13 @@ class settings(object):
     @default('<a href="https://github.com/lanthora/rssbot-beta/blob/master/README.md">README</a>')
     def get_start_msg(cls):
         return settings.config.get("default", "startmsg")
-        
+
     @classmethod
     @default(logging.ERROR)
     def get_log_level(cls):
-        if settings.config.get("default", "loglevel")=="DEBUG":
+        if settings.config.get("default", "loglevel") == "DEBUG":
             return logging.DEBUG
-        elif settings.config.get("default", "loglevel")=="INFO":
+        elif settings.config.get("default", "loglevel") == "INFO":
             return logging.INFO
         else:
             return logging.ERROR
