@@ -30,28 +30,23 @@ from telegram.ext import CommandHandler, Job, Updater
 import util
 from rssdatabase import RSSdatabase
 from rssfetcher import ParseError, RSSFethcer
+from rsssetting import settings
 from util import RecentlyUsedElements
 
 
 class RSSBot(object):
     def __init__(self):
-        self.__config = configparser.ConfigParser()
-        self.__config.read(util.absolute_path('conf.ini'))
-
-        self.bot = Bot(self.__config.get("default", "token"))
-        self.updater = Updater(
-            token=self.__config.get("default", "token"),
-            use_context=True
-        )
+        self.bot = Bot(settings.get_token())
+        self.updater = Updater(token=settings.get_token(), use_context=True)
         self.dp = self.updater.dispatcher
         self.jq = self.updater.job_queue
-        self.freq = int(self.__config.get("default", "freq"))
+        self.interval = settings.get_interval()
 
         self.fether = RSSFethcer()
         self.database = RSSdatabase()
 
         self.et = {}
-        self.el = self.__config.get("default", "errorlimit")
+        self.el = settings.get_error_limit()
 
         self.recently_used_elements = RecentlyUsedElements()
 
@@ -69,8 +64,8 @@ class RSSBot(object):
 
     def __can_sub(self, chat_id, username):
         logging.debug("检查 {} 是否有权限订阅".format(username))
-        admin = self.__config.get("default", "admin")
-        sublimit = int(self.__config.get("default", "sublimit"))
+        admin = settings.get_admin()
+        sublimit = settings.get_sublimit()
         current_sub = len(self.database.get_sub_by_chat_id(chat_id))
         if username == admin or current_sub < sublimit:
             logging.debug("{} 可以进行订阅操作".format(username))
@@ -90,7 +85,7 @@ class RSSBot(object):
         rss_list = self.database.get_rss_list()
         if len(rss_list) == 0:
             return
-        delta = self.freq/len(rss_list)
+        delta = self.interval/len(rss_list)
         for rss in rss_list:
             if self.exit:
                 break
@@ -113,7 +108,6 @@ class RSSBot(object):
                     logging.debug("所有新文章处理完毕 {}".format(rssitem.title))
                     break
                 elif self.recently_used_elements.has_element(iid, url):
-                    normal = True
                     logging.debug("此文章最近推送过 {}".format(rssitem.name))
                     continue
                 else:
@@ -165,7 +159,7 @@ class RSSBot(object):
 
     def start(self, update, context):
         chat_id = update.message.chat_id
-        text = self.__config.get("default", "startmsg")
+        text = settings.get_start_msg()
         self.__send_html(chat_id, text)
 
     def subscribe(self, update, context):
@@ -173,7 +167,7 @@ class RSSBot(object):
         username = update.effective_user.username
         logging.debug("{} 发起订阅".format(username))
         if not self.__can_sub(chat_id, username):
-            sublimit = int(self.__config.get("default", "sublimit"))
+            sublimit = settings.get_sublimit()
             text = '订阅上限为 <i>{}</i> , 您已达到订阅上限\n'.format(sublimit)
             text += '请根据 /start 中的指引自行构建'
             self.__send_html(chat_id, text)
@@ -204,7 +198,7 @@ class RSSBot(object):
             url = update.message.text.split(' ')[1]
             name = self.database.get_rss_by_url(url).title
             self.database.del_sub(url, chat_id)
-            text = '已退订: <a href="{}">{}</a>'.format(url, url)
+            text = '已退订: <a href="{}">{}</a>'.format(url, name)
             logging.info("取消订阅 {} -> {}".format(chat_id, url))
             if(self.database.get_sub_num_by_url(url) == 0):
                 logging.debug("订阅数清零 {}".format(url))
@@ -257,7 +251,7 @@ class RSSBot(object):
         self.dp.add_handler(CommandHandler('rss', self.rss))
         self.dp.add_handler(CommandHandler('rename', self.rename))
         self.dp.add_error_handler(self.__error)
-        self.jq.run_repeating(self.__refresh, self.freq, first=5)
+        self.jq.run_repeating(self.__refresh, self.interval, first=5)
         self.jq.start()
         self.updater.start_polling()
 
