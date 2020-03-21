@@ -5,10 +5,10 @@ import sys
 
 import util
 from rssbot import RSSBot
-from rsssetting import settings
+from rssdata import Settings
 
 if __name__ == '__main__':
-    _level = settings.get_log_level()
+    _level = Settings().get_log_level()
     _format = "%(asctime)s - %(message)s"
     _filename = util.absolute_path("rss.log")
     _filemode = "a"

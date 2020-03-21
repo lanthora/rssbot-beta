@@ -28,29 +28,31 @@ from telegram.error import BadRequest, Unauthorized
 from telegram.ext import CommandHandler, Job, Updater
 
 import util
+from rssdata import RecentlyUsedElements, DataFactory, Settings
 from rssdatabase import RSSdatabase
 from rssfetcher import ParseError, RSSFethcer
-from rsssetting import settings
-from util import RecentlyUsedElements
 
 
 class RSSBot(object):
     def __init__(self):
-        self.bot = Bot(settings.get_token())
-        self.updater = Updater(token=settings.get_token(), use_context=True)
+        self.bot = Bot(Settings().get_token())
+        self.updater = Updater(token=Settings().get_token(), use_context=True)
         self.dp = self.updater.dispatcher
         self.jq = self.updater.job_queue
-        self.interval = settings.get_interval()
+        self.interval = Settings().get_interval()
 
         self.fether = RSSFethcer()
         self.database = RSSdatabase()
 
-        self.et = {}
-        self.el = settings.get_error_limit()
+        self.et = DataFactory().get_error_times_db()
+        self.el = Settings().get_error_limit()
 
         self.recently_used_elements = RecentlyUsedElements()
 
         self.executor = ThreadPoolExecutor()
+
+        self.regular_db = DataFactory().get_regular_exp_db()
+
         self.exit = False
         signal.signal(signal.SIGINT, self.sig_handler)
         signal.signal(signal.SIGTERM, self.sig_handler)
@@ -64,8 +66,8 @@ class RSSBot(object):
 
     def __can_sub(self, chat_id, username):
         logging.debug("检查 {} 是否有权限订阅".format(username))
-        admin = settings.get_admin()
-        sublimit = settings.get_sublimit()
+        admin = Settings().get_admin()
+        sublimit = Settings().get_sublimit()
         current_sub = len(self.database.get_sub_by_chat_id(chat_id))
         if username == admin or current_sub < sublimit:
             logging.debug("{} 可以进行订阅操作".format(username))
@@ -159,7 +161,7 @@ class RSSBot(object):
 
     def start(self, update, context):
         chat_id = update.message.chat_id
-        text = settings.get_start_msg()
+        text = Settings().get_start_msg()
         self.__send_html(chat_id, text)
 
     def subscribe(self, update, context):
@@ -167,7 +169,7 @@ class RSSBot(object):
         username = update.effective_user.username
         logging.debug("{} 发起订阅".format(username))
         if not self.__can_sub(chat_id, username):
-            sublimit = settings.get_sublimit()
+            sublimit = Settings().get_sublimit()
             text = '订阅上限为 <i>{}</i> , 您已达到订阅上限\n'.format(sublimit)
             text += '请根据 /start 中的指引自行构建'
             self.__send_html(chat_id, text)
@@ -259,4 +261,4 @@ class RSSBot(object):
         self.exit = True
         self.updater.stop()
         self.jq.stop()
-        self.recently_used_elements.dump()
+        DataFactory().dump()

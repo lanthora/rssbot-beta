@@ -2,7 +2,7 @@ test.py
 log
 conf.ini
 rss.db
-dict.json
+database.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
