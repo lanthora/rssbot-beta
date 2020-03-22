@@ -27,10 +27,10 @@ from telegram import Bot
 from telegram.error import BadRequest, Unauthorized
 from telegram.ext import CommandHandler, Job, Updater
 
-import util
-from rssdata import RecentlyUsedElements, NoSQLDB, Settings
+from rssdata import NoSQLDB, RecentlyUsedElements, Settings, RegularExpression
 from rssdatabase import RSSdatabase
 from rssfetcher import ParseError, RSSFethcer
+from util import md5sum, regular_match
 
 
 class RSSBot(object):
@@ -40,20 +40,14 @@ class RSSBot(object):
         self.dp = self.updater.dispatcher
         self.jq = self.updater.job_queue
         self.interval = Settings().get_interval()
-
         self.fether = RSSFethcer()
         self.database = RSSdatabase()
-
         self.et = NoSQLDB().get_error_times_db()
         self.el = Settings().get_error_limit()
-
         self.recently_used_elements = RecentlyUsedElements()
-
         self.executor = ThreadPoolExecutor()
-
-        self.regular_db = NoSQLDB().get_regular_exp_db()
-
         self.exit = False
+        self.re_db = RegularExpression()
         signal.signal(signal.SIGINT, self.sig_handler)
         signal.signal(signal.SIGTERM, self.sig_handler)
 
@@ -104,10 +98,11 @@ class RSSBot(object):
             rssitems = []
             normal = False
             for rssitem in _rssitems:
-                iid = util.md5sum(rssitem.mark)
+                iid = md5sum(rssitem.mark)
                 if rssitem.mark == mark:
                     normal = True
-                    logging.debug("所有新文章处理完毕 {}".format(rssitem.title))
+                    logging.debug("{} 共 {} 篇文章需要推送".format(
+                        rssitem.title, len(rssitems)))
                     break
                 elif self.recently_used_elements.has_element(iid, url):
                     logging.debug("此文章最近推送过 {}".format(rssitem.name))
@@ -145,6 +140,9 @@ class RSSBot(object):
 
         logging.debug("需要发送的用户数 {}".format(len(chats)))
         for chat_id in chats:
+            _text = regular_match(_text, self.re_db.get_re(chat_id, _url))
+            if(_text == "\n"):
+                continue
             logging.debug("查询的url {}".format(_url))
             logging.debug("查询的chat_id {}".format(chat_id))
             nickname = self.database.get_nickname(_url, chat_id)
@@ -246,12 +244,46 @@ class RSSBot(object):
         finally:
             self.__send_html(chat_id, text)
 
+    def add_re(self, update, context):
+        chat_id = update.message.chat_id
+        try:
+            _url = update.message.text.split(' ')[1]
+            regular = ' '.join(update.message.text.split(' ')[2:]).strip()
+            self.re_db.set_re(chat_id, _url, regular)
+            text = '成功添加正则表达式 <a href="{}">{}</a>'.format(_url, regular)
+            re_add_log = "添加正则表达式 {} , {} -> {}"
+            logging.info(re_add_log.format(chat_id, _url, regular))
+        except IndexError:
+            text = '请输入正确的格式:\n/addre url regular'
+        except:
+            text = '发生未知错误'
+        finally:
+            self.__send_html(chat_id, text)
+
+    def del_re(self, update, context):
+        chat_id = update.message.chat_id
+        try:
+            _url = update.message.text.split(' ')[1]
+            rm_re_view = '成功移除正则表达式 <a href="{}">{}</a>'
+            text = rm_re_view.format(_url, self.re_db.get_re(chat_id, _url))
+            self.re_db.rm_re(chat_id, _url)
+            re_rm_log = "移除正则表达式 {} , {}"
+            logging.info(re_rm_log.format(chat_id, _url))
+        except IndexError:
+            text = '请输入正确的格式:\n/delre url'
+        except:
+            text = '发生未知错误'
+        finally:
+            self.__send_html(chat_id, text)
+
     def run(self):
         self.dp.add_handler(CommandHandler('start', self.start))
         self.dp.add_handler(CommandHandler('sub', self.subscribe))
         self.dp.add_handler(CommandHandler('unsub', self.unsubscribe))
         self.dp.add_handler(CommandHandler('rss', self.rss))
         self.dp.add_handler(CommandHandler('rename', self.rename))
+        self.dp.add_handler(CommandHandler('addre', self.add_re))
+        self.dp.add_handler(CommandHandler('delre', self.del_re))
         self.dp.add_error_handler(self.__error)
         self.jq.run_repeating(self.__refresh, self.interval, first=5)
         self.jq.start()
@@ -262,4 +294,3 @@ class RSSBot(object):
         self.exit = True
         self.updater.stop()
         self.jq.stop()
-

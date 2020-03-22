@@ -19,6 +19,7 @@
 import configparser
 import json
 import logging
+import random
 import time
 
 from util import absolute_path, default, singleton
@@ -67,6 +68,10 @@ class Settings(object):
         else:
             return logging.ERROR
 
+    @default(100)
+    def get_rue_limit(self):
+        return int(self.config.get("default", "ruelimit"))
+
 
 @singleton
 class NoSQLDB(object):
@@ -74,6 +79,7 @@ class NoSQLDB(object):
         self.data: dict = {}
         self.__loaded: bool = False
         self.__dumped: bool = False
+
     def load(self):
         if self.__loaded:
             return
@@ -107,22 +113,34 @@ class NoSQLDB(object):
         self.load()
         return self.data.setdefault("rue", {})
 
+
+@singleton
+class RegularExpression(object):
+    def __init__(self):
+        self.db = NoSQLDB().get_regular_exp_db()
+
     @default(False)
-    def set_regular_exp_by_chatid_and_rss(self, chat_id, url, regular):
-        user_re_db: dict = self.get_regular_exp_db().setdefault(str(chat_id), {})
+    def set_re(self, chat_id, url, regular):
+        user_re_db: dict = self.db.setdefault(str(chat_id), {})
         user_re_db[str(url)] = str(regular)
         return True
 
     @default(None)
-    def get_regular_exp_by_chatid_and_rss(self, chat_id, url):
-        return self.get_regular_exp_db()[str(chat_id)][str(url)]
+    def get_re(self, chat_id, url):
+        return self.db[str(chat_id)][str(url)]
+
+    @default(False)
+    def rm_re(self, chat_id, url):
+        user_re_db: dict = self.db.setdefault(str(chat_id), {})
+        user_re_db.pop(str(url))
+        return True
 
 
 @singleton
 class RecentlyUsedElements():
-    def __init__(self, dict_limit: int = 50):
+    def __init__(self):
         self.dict = NoSQLDB().get_recently_used_elements_db()
-        self.dict_limit = dict_limit
+        self.dict_limit = Settings().get_rue_limit()
 
     def has_element(self, element: str, url: str = None) -> bool:
         logging.debug("查重 {}".format(url))
@@ -148,7 +166,11 @@ class RecentlyUsedElements():
         logging.debug("释放后缓存数目 {}".format(len(dict_url)))
 
     def __randomly_delete_the_earliest_added_element(self, dict_url: dict):
-        random_key = random.choice(list(dict_url.keys()))
+        logging.debug("开始随机删除元素")
+        try:
+            random_key = random.choice(list(dict_url.keys()))
+        except Exception as e:
+            logging.error(e)
 
         logging.debug("dict_url.get(random_key) {}".format(
             dict_url.get(random_key)))
@@ -172,7 +194,6 @@ class RecentlyUsedElements():
 
 if __name__ == "__main__":
     rue: RecentlyUsedElements = RecentlyUsedElements()
-    print(rue.has_element(1, 2))
-    print(rue.has_element(1, 2))
-    print(rue.has_element(1, 2))
+    for i in range(20):
+        print(rue.has_element(1, i))
     NoSQLDB().dump()

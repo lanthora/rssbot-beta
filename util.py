@@ -19,9 +19,9 @@
 import hashlib
 import json
 import logging
-import random
 import sys
 from functools import wraps
+import re
 
 
 def md5sum(plain: str) -> str:
@@ -61,5 +61,22 @@ def default(default_value):
     return set_default_value
 
 
+@default([])
+def delete_unmatched(lines: [], regular):
+    # 拆分行首的'\n'会出现lines[0]为''的情况，计数时不需要考虑第一个
+    logging.debug("需要进行正则匹配的数量 {}".format(len(lines)-1))
+    lines = [line for line in lines if re.match(regular, line) != None]
+    logging.debug("匹配后剩余数量 {}".format(len(lines)))
+    return lines
+
+def regular_match(lines: str, regular):
+    if regular == None:
+        logging.debug("未设置正则匹配 直接返回")
+        return lines
+    lines = "\n".join(delete_unmatched(lines.split("\n"), regular))
+    logging.debug("最终推送的字符串为 {}".format(lines))
+    return "\n{}".format(lines)
+
+
 if __name__ == '__main__':
-    pass
+    print(regular_match("1\n2\n3\n4", ".*"))
