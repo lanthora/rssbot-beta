@@ -53,7 +53,7 @@ def default(default_value):
                 ret = fn(*args, **kwargs)
             except:
                 ret = default_value
-                logging.error("函数 {} 使用默认返回值 {}".format(
+                logging.debug("函数 {} 使用默认返回值 {}".format(
                     fn.__name__, default_value))
             finally:
                 return ret
