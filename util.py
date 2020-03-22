@@ -19,9 +19,9 @@
 import hashlib
 import json
 import logging
+import re
 import sys
 from functools import wraps
-import re
 
 
 def md5sum(plain: str) -> str:
@@ -68,6 +68,7 @@ def delete_unmatched(lines: [], regular):
     lines = [line for line in lines if re.match(regular, line) != None]
     logging.debug("匹配后剩余数量 {}".format(len(lines)))
     return lines
+
 
 def regular_match(lines: str, regular):
     if regular == None:

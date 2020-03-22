@@ -16,8 +16,10 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.   #
 #                                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-import feedparser
 import logging
+
+import feedparser
+
 import util
 from rssmodule import RSS, RSSItem
 

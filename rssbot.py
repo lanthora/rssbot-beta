@@ -27,7 +27,7 @@ from telegram import Bot
 from telegram.error import BadRequest, Unauthorized
 from telegram.ext import CommandHandler, Job, Updater
 
-from rssdata import NoSQLDB, RecentlyUsedElements, Settings, RegularExpression
+from rssdata import NoSQLDB, RecentlyUsedElements, RegularExpression, Settings
 from rssdatabase import RSSdatabase
 from rssfetcher import ParseError, RSSFethcer
 from util import md5sum, regular_match

@@ -19,8 +19,9 @@
 import configparser
 import sqlite3
 
-from rssmodule import RSS
 import util
+from rssmodule import RSS
+
 
 class RSSdatabase(object):
     def __init__(self):
