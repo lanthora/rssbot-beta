@@ -59,16 +59,10 @@ class RSSBot(object):
         )
 
     def __can_sub(self, chat_id, username):
-        logging.debug("检查 {} 是否有权限订阅".format(username))
         admin = Settings().get_admin()
         sublimit = Settings().get_sublimit()
         current_sub = len(self.database.get_sub_by_chat_id(chat_id))
-        if username == admin or current_sub < sublimit:
-            logging.debug("{} 可以进行订阅操作".format(username))
-            return True
-        else:
-            logging.debug("{} 禁止进行订阅操作".format(username))
-            return False
+        return (username == admin or current_sub < sublimit)
 
     def __error(self, update, context):
         try:
@@ -77,7 +71,6 @@ class RSSBot(object):
             logging.error(e)
 
     def __refresh(self, context):
-        logging.debug("开始刷新所有订阅")
         rss_list = self.database.get_rss_list()
         if len(rss_list) == 0:
             return
@@ -89,7 +82,6 @@ class RSSBot(object):
             time.sleep(delta)
 
     def __update(self, url):
-        logging.debug("开始更新 {}".format(url))
         try:
             chats = self.database.get_chats_by_url(url)
             mark = self.database.get_mark(url)
@@ -97,26 +89,31 @@ class RSSBot(object):
             self.database.set_mark(url, _rssitems[0].mark)
             rssitems = []
             normal = False
+            continue_times = 0
             for rssitem in _rssitems:
                 iid = md5sum(rssitem.mark)
                 if rssitem.mark == mark:
                     normal = True
-                    logging.debug("{} 共 {} 篇文章需要推送".format(
-                        rssitem.title, len(rssitems)))
                     break
+
+                # 出现三篇最近推送过的文章,即使mark不匹配，也是视为正常匹配
+                # 这个策略可以用来解决最近文章被替换的问题
                 elif self.recently_used_elements.has_element(iid, url):
-                    logging.debug("此文章最近推送过 {}".format(rssitem.name))
-                    continue
+                    continue_times += 1
+                    if continue_times < 3:
+                        continue
+                    else:
+                        normal = (len(rssitems) != 0)
+                        break
                 else:
                     rssitems.append(rssitem)
-                    logging.debug("添加新文章 {}".format(rssitem.name))
+
             if not normal:
                 rssitems.clear()
-                logging.debug("出现异常，清空所有文章 {}".format(rssitem.title))
                 logging.info("更新异常 清理推送 {}".format(url))
             self.et[url] = 0
+
             if len(rssitems) > 0:
-                logging.debug("准备发送更新 {}".format(rssitem.title))
                 self.__send(rssitems, chats)
 
         except (ParseError, IndexError):
@@ -136,20 +133,17 @@ class RSSBot(object):
         while len(rssitems):
             rssitem = rssitems.pop()
             _text += '\n<a href="{}">{}</a>'.format(rssitem.link, rssitem.name)
-            logging.debug("取出文章标题添加到要发送到字符串 {}".format(rssitem.name))
 
-        logging.debug("需要发送的用户数 {}".format(len(chats)))
         for chat_id in chats:
             _text = regular_match(_text, self.re_db.get_re(chat_id, _url))
             if(_text == "\n"):
                 continue
-            logging.debug("查询的url {}".format(_url))
-            logging.debug("查询的chat_id {}".format(chat_id))
+
             nickname = self.database.get_nickname(_url, chat_id)
-            logging.debug("获取别名 {}".format(nickname))
+
             _title = '<b>{}</b>'.format(nickname)
             text = _title + _text
-            logging.debug("组合成最终需要发送的字符串 {}".format(text))
+
             try:
                 self.__send_html(chat_id, text)
             except (BadRequest, Unauthorized):
@@ -165,7 +159,7 @@ class RSSBot(object):
     def subscribe(self, update, context):
         chat_id = update.message.chat_id
         username = update.effective_user.username
-        logging.debug("{} 发起订阅".format(username))
+
         if not self.__can_sub(chat_id, username):
             sublimit = Settings().get_sublimit()
             text = '订阅上限为 <i>{}</i> , 您已达到订阅上限\n'.format(sublimit)
@@ -175,9 +169,7 @@ class RSSBot(object):
             return
         try:
             url = update.message.text.split(' ')[1]
-            logging.debug("从命令中拆分出订阅url {}".format(url))
             rss = self.fether.check_url(url)
-            logging.debug("请求url并返回rss对象")
             if rss.active:
                 self.database.add_rss(rss)
                 self.database.add_sub(rss.url, chat_id)
@@ -201,7 +193,6 @@ class RSSBot(object):
             text = '已退订: <a href="{}">{}</a>'.format(url, name)
             logging.info("取消订阅 {} -> {}".format(chat_id, url))
             if(self.database.get_sub_num_by_url(url) == 0):
-                logging.debug("订阅数清零 {}".format(url))
                 self.recently_used_elements.remove_cache(url)
 
         except IndexError:
@@ -232,7 +223,6 @@ class RSSBot(object):
         try:
             url = update.message.text.split(' ')[1]
             nickname = ' '.join(update.message.text.split(' ')[2:]).strip()
-            logging.debug("更新的别名为 {}".format(nickname))
             self.database.set_nickname(url, chat_id, nickname)
             text = '别名已更新为: <a href="{}">{}</a>'.format(url, nickname)
         except IndexError:
