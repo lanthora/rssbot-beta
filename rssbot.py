@@ -278,6 +278,7 @@ class RSSBot(object):
         self.jq.run_repeating(self.__refresh, self.interval, first=5)
         self.jq.start()
         self.updater.start_polling()
+        self.updater.idle()
 
     def sig_handler(self, signal, frame):
         NoSQLDB().dump()
