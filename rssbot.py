@@ -18,8 +18,8 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 import configparser
 import logging
-import signal
 import sys
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
@@ -46,10 +46,9 @@ class RSSBot(object):
         self.el = Settings().get_error_limit()
         self.recently_used_elements = RecentlyUsedElements()
         self.executor = ThreadPoolExecutor()
-        self.exit = False
+        self.running = True
+        self.semaphore = threading.Semaphore(0)
         self.re_db = RegularExpression()
-        signal.signal(signal.SIGINT, self.sig_handler)
-        signal.signal(signal.SIGTERM, self.sig_handler)
 
     def __send_html(self, chat_id, text):
         self.bot.send_message(
@@ -70,16 +69,16 @@ class RSSBot(object):
         except BaseException as e:
             logging.error(e)
 
-    def __refresh(self, context):
+    def __refresh(self):
         rss_list = self.database.get_rss_list()
         if len(rss_list) == 0:
             return
         delta = self.interval/len(rss_list)
         for rss in rss_list:
-            if self.exit:
-                break
             self.executor.submit(self.__update, rss.url)
-            time.sleep(delta)
+            if self.semaphore.acquire(timeout=delta):
+                self.running = False
+                break
 
     def __update(self, url):
         try:
@@ -275,13 +274,13 @@ class RSSBot(object):
         self.dp.add_handler(CommandHandler('addre', self.add_re))
         self.dp.add_handler(CommandHandler('delre', self.del_re))
         self.dp.add_error_handler(self.__error)
-        self.jq.run_repeating(self.__refresh, self.interval, first=5)
-        self.jq.start()
         self.updater.start_polling()
-        self.updater.idle()
 
-    def sig_handler(self, signal, frame):
+        while self.running:
+            self.__refresh()
+
         NoSQLDB().dump()
-        self.exit = True
         self.updater.stop()
-        self.jq.stop()
+
+    def stop(self):
+        self.semaphore.release()
