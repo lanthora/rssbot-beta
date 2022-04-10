@@ -1,6 +1,6 @@
 # RSSBot-beta
 
-# Demo
+## Demo
 
 [Telgram RSS Bot](https://t.me/BRSSBot)
 
@@ -15,3 +15,7 @@
 ## Configuration
 
 Reference [Configuration sample](conf.sample.ini)
+
+## License
+
+[GPL-3.0-or-later](https://spdx.org/licenses/GPL-3.0-or-later.html)

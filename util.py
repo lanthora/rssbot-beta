@@ -1,23 +1,5 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                                                             #
-#     Copyright (C)     2019-2020   lanthora                                  #
-#                                                                             #
-#    This program is free software: you can redistribute it and/or modify     #
-#    it under the terms of the GNU General Public License as published by     #
-#    the Free Software Foundation, either version 3 of the License, or        #
-#    (at your option) any later version.                                      #
-#                                                                             #
-#    This program is distributed in the hope that it will be useful,          #
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of           #
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            #
-#    GNU General Public License for more details.                             #
-#                                                                             #
-#    You should have received a copy of the GNU General Public License        #
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.   #
-#                                                                             #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# SPDX-License-Identifier: GPL-3.0-or-later
 import hashlib
-import json
 import logging
 import re
 import sys
@@ -62,7 +44,7 @@ def default(default_value):
 
 
 @default([])
-def delete_unmatched(lines: [], regular):
+def delete_unmatched(lines, regular):
     # 拆分行首的'\n'会出现lines[0]为''的情况，计数时不需要考虑第一个
     logging.debug("需要进行正则匹配的数量 {}".format(len(lines)-1))
     lines = [line for line in lines if re.match(regular, line) != None]

@@ -18,7 +18,6 @@
 出现这种现象可能的情况是，该订阅内容更新的频率过高。可以缩短BOT默认的刷新间隔尝试解决这个问题。
 可在INFO级别的rss.log中查看是否出现上述情况。
 
-
 ## 命令
 
 ```html
@@ -53,5 +52,6 @@
 
 参考[配置样例](conf.sample.ini)
 
+## License
 
-
+[GPL-3.0-or-later](https://spdx.org/licenses/GPL-3.0-or-later.html)

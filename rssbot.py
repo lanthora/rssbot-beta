@@ -1,26 +1,6 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                                                             #
-#     Copyright (C)     2019-2020   lanthora                                  #
-#                                                                             #
-#    This program is free software: you can redistribute it and/or modify     #
-#    it under the terms of the GNU General Public License as published by     #
-#    the Free Software Foundation, either version 3 of the License, or        #
-#    (at your option) any later version.                                      #
-#                                                                             #
-#    This program is distributed in the hope that it will be useful,          #
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of           #
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            #
-#    GNU General Public License for more details.                             #
-#                                                                             #
-#    You should have received a copy of the GNU General Public License        #
-#    along with this program.  If not, see <https://www.gnu.org/licenses/>.   #
-#                                                                             #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-import configparser
+# SPDX-License-Identifier: GPL-3.0-or-later
 import logging
-import sys
 import threading
-import time
 from concurrent.futures import ThreadPoolExecutor
 
 from telegram import Bot
@@ -38,7 +18,6 @@ class RSSBot(object):
         self.bot = Bot(Settings().get_token())
         self.updater = Updater(token=Settings().get_token(), use_context=True)
         self.dp = self.updater.dispatcher
-        self.jq = self.updater.job_queue
         self.interval = Settings().get_interval()
         self.fether = RSSFethcer()
         self.database = RSSdatabase()
@@ -177,7 +156,7 @@ class RSSBot(object):
                 logging.info("成功订阅 {} -> {}".format(chat_id, url))
             else:
                 issue = "https://github.com/lanthora/rssbot-beta/issues"
-                text = '暂不支持此RSS，请<a href="{}">上报</a>'.format(issue)
+                text = '暂不支持此RSS, 请<a href="{}">上报</a>'.format(issue)
         except IndexError:
             text = '请输入正确的格式:\n/sub url'
         finally:

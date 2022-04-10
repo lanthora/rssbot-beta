@@ -1,8 +1,6 @@
 #!/usr/bin/python3
-import configparser
 import logging
 import signal
-import sys
 
 import util
 from rssbot import RSSBot
