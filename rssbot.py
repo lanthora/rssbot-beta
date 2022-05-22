@@ -24,7 +24,7 @@ class RSSBot(object):
         self.et = NoSQLDB().get_error_times_db()
         self.el = Settings().get_error_limit()
         self.recently_used_elements = RecentlyUsedElements()
-        self.executor = ThreadPoolExecutor()
+        self.executor = ThreadPoolExecutor(max_workers=64)
         self.running = True
         self.semaphore = threading.Semaphore(0)
         self.re_db = RegularExpression()
