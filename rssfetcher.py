@@ -8,11 +8,10 @@ class RSSFethcer(object):
     def check_url(self, url):
         rss = RSS()
         try:
-            # TODO: 拆分下载和解析,并设置下载超时时间
             d = feedparser.parse(url)
+            # 有些标题里面带换行或者很多空格,把所有的空白符换成单个空格
             rss.title = " ".join(d.feed.title.split())
             rss.url = d.feed.title_detail.base
-            _name = d.entries[0].title
             _link = d.entries[0].link
             try:
                 _guid = d.entries[0].guid
@@ -28,7 +27,6 @@ class RSSFethcer(object):
     def update_rss(self, url):
         try:
             rssitems = []
-            # TODO: 拆分下载和解析,并设置下载超时时间
             d = feedparser.parse(url)
             _title = " ".join(d.feed.title.split())
             _url = d.feed.title_detail.base

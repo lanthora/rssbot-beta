@@ -57,7 +57,7 @@ class RSSBot(object):
 
     def __update_error_handler(self, url, chats, retry):
         cnt = self.errcnt.get(url, 0)
-        if retry and cnt < 10:
+        if retry and cnt < 24 * 60 / self.interval:
             logging.info("更新出错 {}".format(url))
             self.errcnt[url] = cnt + 1
             return
@@ -90,7 +90,7 @@ class RSSBot(object):
 
             if not normal:
                 rssitems.clear()
-                self.__update_error_handler(url, chats, False)
+                self.__update_error_handler(url, chats, True)
 
             if len(rssitems) > 0:
                 self.__send(rssitems, chats)
