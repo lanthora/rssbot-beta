@@ -55,6 +55,15 @@ class RSSBot(object):
                 self.running = False
                 break
 
+    def __update_error_handler(self, url, chats):
+        self.database.set_active(url, False)
+        title = self.database.get_rss_by_url(url).title
+        text = '<a href="{}">{} </a>'.format(url, title)
+        text += '更新时出现错误，已停止推送，请检查无误后重新订阅'
+        logging.info("停止推送 {}".format(url))
+        for chat_id in chats:
+            self.__send_html(chat_id, text)
+
     def __update(self, url):
         try:
             chats = self.database.get_chats_by_url(url)
@@ -74,19 +83,14 @@ class RSSBot(object):
 
             if not normal:
                 rssitems.clear()
-                logging.info("更新异常 清理推送 {}".format(url))
+                self.__update_error_handler(url, chats)
 
             if len(rssitems) > 0:
                 self.__send(rssitems, chats)
 
         except (ParseError, IndexError):
-            self.database.set_active(url, False)
-            title = self.database.get_rss_by_url(url).title
-            text = '<a href="{}">{} </a>'.format(url, title)
-            text += '更新时出现错误，已停止推送，请检查无误后重新订阅'
-            logging.info("连续错误 停止推送 {}".format(url))
-            for chat_id in chats:
-                self.__send_html(chat_id, text)
+            self.__update_error_handler(url, chats)
+
 
     def __send(self, rssitems, chats):
         _text = ''
