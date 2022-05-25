@@ -14,12 +14,8 @@ def handler(signal, frame):
 
 
 def main():
-    _level = Settings().get_log_level()
     _format = "%(asctime)s - %(message)s"
-    _filename = util.absolute_path("rss.log")
-    _filemode = "a"
-    logging.basicConfig(level=_level, format=_format,
-                        filename=_filename, filemode=_filemode)
+    logging.basicConfig(level=logging.INFO, format=_format)
     signal.signal(signal.SIGINT, handler)
     signal.signal(signal.SIGTERM, handler)
     signal.signal(signal.SIGABRT, handler)

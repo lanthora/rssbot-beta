@@ -7,10 +7,10 @@ from telegram import Bot
 from telegram.error import BadRequest, Unauthorized
 from telegram.ext import CommandHandler, Job, Updater
 
-from rssdata import NoSQLDB, RecentlyUsedElements, RegularExpression, Settings
+from rssdata import Settings
 from rssdatabase import RSSdatabase
 from rssfetcher import ParseError, RSSFethcer
-from util import md5sum, regular_match
+from util import md5sum
 
 
 class RSSBot(object):
@@ -21,13 +21,9 @@ class RSSBot(object):
         self.interval = Settings().get_interval()
         self.fether = RSSFethcer()
         self.database = RSSdatabase()
-        self.et = NoSQLDB().get_error_times_db()
-        self.el = Settings().get_error_limit()
-        self.recently_used_elements = RecentlyUsedElements()
-        self.executor = ThreadPoolExecutor(max_workers=64)
+        self.executor = ThreadPoolExecutor(max_workers=50)
         self.running = True
         self.semaphore = threading.Semaphore(0)
-        self.re_db = RegularExpression()
 
     def __send_html(self, chat_id, text):
         self.bot.send_message(
@@ -74,36 +70,23 @@ class RSSBot(object):
                     normal = True
                     break
 
-                # 出现三篇最近推送过的文章,即使mark不匹配，也是视为正常匹配
-                # 这个策略可以用来解决最近文章被替换的问题
-                elif self.recently_used_elements.has_element(iid, url):
-                    continue_times += 1
-                    if continue_times < 3:
-                        continue
-                    else:
-                        normal = (len(rssitems) != 0)
-                        break
-                else:
-                    rssitems.append(rssitem)
+                rssitems.append(rssitem)
 
             if not normal:
                 rssitems.clear()
                 logging.info("更新异常 清理推送 {}".format(url))
-            self.et[url] = 0
 
             if len(rssitems) > 0:
                 self.__send(rssitems, chats)
 
         except (ParseError, IndexError):
-            self.et[url] = self.et.setdefault(url, 0) + 1
-            if self.et[url] >= int(self.el):
-                self.database.set_active(url, False)
-                title = self.database.get_rss_by_url(url).title
-                text = '<a href="{}">{} </a>'.format(url, title)
-                text += '更新时出现错误，已停止推送，请检查无误后重新订阅'
-                logging.info("连续错误 停止推送{}".format(url))
-                for chat_id in chats:
-                    self.__send_html(chat_id, text)
+            self.database.set_active(url, False)
+            title = self.database.get_rss_by_url(url).title
+            text = '<a href="{}">{} </a>'.format(url, title)
+            text += '更新时出现错误，已停止推送，请检查无误后重新订阅'
+            logging.info("连续错误 停止推送 {}".format(url))
+            for chat_id in chats:
+                self.__send_html(chat_id, text)
 
     def __send(self, rssitems, chats):
         _text = ''
@@ -113,10 +96,6 @@ class RSSBot(object):
             _text += '\n<a href="{}">{}</a>'.format(rssitem.link, rssitem.name)
 
         for chat_id in chats:
-            _text = regular_match(_text, self.re_db.get_re(chat_id, _url))
-            if(_text == "\n"):
-                continue
-
             nickname = self.database.get_nickname(_url, chat_id)
 
             _title = '<b>{}</b>'.format(nickname)
@@ -212,53 +191,18 @@ class RSSBot(object):
         finally:
             self.__send_html(chat_id, text)
 
-    def add_re(self, update, context):
-        chat_id = update.message.chat_id
-        try:
-            _url = update.message.text.split(' ')[1]
-            regular = ' '.join(update.message.text.split(' ')[2:]).strip()
-            self.re_db.set_re(chat_id, _url, regular)
-            text = '成功添加正则表达式 <a href="{}">{}</a>'.format(_url, regular)
-            re_add_log = "添加正则表达式 {} , {} -> {}"
-            logging.info(re_add_log.format(chat_id, _url, regular))
-        except IndexError:
-            text = '请输入正确的格式:\n/addre url regular'
-        except:
-            text = '发生未知错误'
-        finally:
-            self.__send_html(chat_id, text)
-
-    def del_re(self, update, context):
-        chat_id = update.message.chat_id
-        try:
-            _url = update.message.text.split(' ')[1]
-            rm_re_view = '成功移除正则表达式 <a href="{}">{}</a>'
-            text = rm_re_view.format(_url, self.re_db.get_re(chat_id, _url))
-            self.re_db.rm_re(chat_id, _url)
-            re_rm_log = "移除正则表达式 {} , {}"
-            logging.info(re_rm_log.format(chat_id, _url))
-        except IndexError:
-            text = '请输入正确的格式:\n/delre url'
-        except:
-            text = '发生未知错误'
-        finally:
-            self.__send_html(chat_id, text)
-
     def run(self):
         self.dp.add_handler(CommandHandler('start', self.start))
         self.dp.add_handler(CommandHandler('sub', self.subscribe))
         self.dp.add_handler(CommandHandler('unsub', self.unsubscribe))
         self.dp.add_handler(CommandHandler('rss', self.rss))
         self.dp.add_handler(CommandHandler('rename', self.rename))
-        self.dp.add_handler(CommandHandler('addre', self.add_re))
-        self.dp.add_handler(CommandHandler('delre', self.del_re))
         self.dp.add_error_handler(self.__error)
         self.updater.start_polling()
 
         while self.running:
             self.__refresh()
 
-        NoSQLDB().dump()
         self.updater.stop()
 
     def stop(self):
