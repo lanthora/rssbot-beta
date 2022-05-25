@@ -53,7 +53,6 @@ class RSSBot(object):
         for rss in rss_list:
             self.executor.submit(self.__update, rss.url)
             if self.semaphore.acquire(timeout=delta):
-                self.running = False
                 break
 
     def __update_error_handler(self, url, chats, retry):
@@ -218,4 +217,5 @@ class RSSBot(object):
         self.updater.stop()
 
     def stop(self):
+        self.running = False
         self.semaphore.release()
