@@ -24,6 +24,7 @@ class RSSBot(object):
         self.executor = ThreadPoolExecutor(max_workers=50)
         self.running = True
         self.semaphore = threading.Semaphore(0)
+        self.errcnt = {}
 
     def __send_html(self, chat_id, text):
         self.bot.send_message(
@@ -55,7 +56,13 @@ class RSSBot(object):
                 self.running = False
                 break
 
-    def __update_error_handler(self, url, chats):
+    def __update_error_handler(self, url, chats, retry):
+        cnt = self.errcnt.get(url, 0)
+        if retry and cnt < 10:
+            logging.info("更新出错 {}".format(url))
+            self.errcnt[url] = cnt + 1
+            return
+
         self.database.set_active(url, False)
         title = self.database.get_rss_by_url(url).title
         text = '<a href="{}">{} </a>'.format(url, title)
@@ -77,19 +84,20 @@ class RSSBot(object):
                 iid = md5sum(rssitem.mark)
                 if rssitem.mark == mark:
                     normal = True
+                    self.errcnt[url] = 0
                     break
 
                 rssitems.append(rssitem)
 
             if not normal:
                 rssitems.clear()
-                self.__update_error_handler(url, chats)
+                self.__update_error_handler(url, chats, False)
 
             if len(rssitems) > 0:
                 self.__send(rssitems, chats)
 
         except (ParseError, IndexError):
-            self.__update_error_handler(url, chats)
+            self.__update_error_handler(url, chats, True)
 
 
     def __send(self, rssitems, chats):
