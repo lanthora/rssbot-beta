@@ -57,7 +57,7 @@ class RSSBot(object):
 
     def __update_error_handler(self, url, chats, retry):
         cnt = self.errcnt.get(url, 0)
-        if retry and cnt < 24 * 60 / self.interval:
+        if retry and cnt < 24 * 60 * 60 / self.interval:
             logging.info("更新出错 {}".format(url))
             self.errcnt[url] = cnt + 1
             return
